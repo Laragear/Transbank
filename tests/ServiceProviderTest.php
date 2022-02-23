@@ -8,14 +8,14 @@ use Laragear\Transbank\Http\Client;
 use Laragear\Transbank\Http\Middleware\ProtectTransaction;
 use Laragear\Transbank\Listeners\SaveTransactionToken;
 use Laragear\Transbank\Services\Webpay;
-use Laragear\Transbank\TranspayServiceProvider;
+use Laragear\Transbank\TransbankServiceProvider;
 
 class ServiceProviderTest extends TestCase
 {
     public function test_merges_config(): void
     {
         static::assertSame(
-            $this->app->make('files')->getRequire(TranspayServiceProvider::CONFIG),
+            $this->app->make('files')->getRequire(TransbankServiceProvider::CONFIG),
             $this->app->make('config')->get('transbank')
         );
     }
@@ -63,7 +63,7 @@ class ServiceProviderTest extends TestCase
     public function test_publishes_config(): void
     {
         static::assertSame([
-            TranspayServiceProvider::CONFIG => $this->app->configPath('transbank.php'),
-        ], ServiceProvider::pathsToPublish(TranspayServiceProvider::class, 'config'));
+            TransbankServiceProvider::CONFIG => $this->app->configPath('transbank.php'),
+        ], ServiceProvider::pathsToPublish(TransbankServiceProvider::class, 'config'));
     }
 }

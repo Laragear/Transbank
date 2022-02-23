@@ -8,7 +8,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Laragear\Transbank\Events\TransactionCreated;
 
-class TranspayServiceProvider extends ServiceProvider
+class TransbankServiceProvider extends ServiceProvider
 {
     public const CONFIG = __DIR__.'/../config/transbank.php';
 
