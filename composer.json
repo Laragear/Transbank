@@ -1,0 +1,86 @@
+{
+    "name": "laragear/transbank",
+    "description": "Easy-to-use Transbank SDK for PHP.",
+    "type": "library",
+    "license": "MIT",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "keywords": [
+        "payments",
+        "transbank",
+        "api",
+        "sdk",
+        "webpay",
+        "oneclick",
+        "chile"
+    ],
+    "authors": [
+        {
+            "name": "Italo Israel Baeza Cabrera",
+            "email": "darkghosthunter@gmail.com",
+            "homepage": "https://patreon.com/packagesforlaravel"
+        }
+    ],
+    "support": {
+        "source": "https://github.com/Laragear/Transbank",
+        "issues": "https://github.com/Laragear/Transbank/issues"
+    },
+    "require": {
+        "php": "^8.0.2",
+        "ext-json": "*",
+        "illuminate/http": "9.*",
+        "illuminate/log": "9.*",
+        "illuminate/events": "9.*",
+        "guzzlehttp/guzzle": "^7.2"
+    },
+    "require-dev": {
+        "orchestra/testbench": "7.*",
+        "phpunit/phpunit": "^9.5",
+        "mockery/mockery": "^1.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Laragear\\Transbank\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit --coverage-clover build/logs/clover.xml",
+        "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Laragear\\Transbank\\TransbankServiceProvider"
+            ],
+            "aliases": {
+                "ReCaptcha": "Laragear\\Transbank\\Facades\\Webpay"
+            }
+        }
+    },
+    "funding": [
+        {
+            "type": "Patreon",
+            "url": "https://patreon.com/PackagesForLaravel"
+        },
+        {
+            "type": "Ko-Fi",
+            "url": "https://ko-fi.com/DarkGhostHunter"
+        },
+        {
+            "type": "Buy me a cofee",
+            "url": "https://www.buymeacoffee.com/darkghosthunter"
+        },
+        {
+            "type": "Paypal",
+            "url": "https://paypal.me/darkghosthunter"
+        }
+    ]
+}
