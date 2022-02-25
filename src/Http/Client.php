@@ -81,7 +81,7 @@ class Client
             ->timeout($this->config->get('transbank.http.timeout'))
             ->withHeaders($this->getHeadersKeysForService($request->service))
             ->baseUrl($this->getTransbankBaseEndpoint())
-            ->withUserAgent('php:laragear/transpay/'.Transbank::VERSION)
+            ->withUserAgent('php:laragear/transbank/'.Transbank::VERSION)
             ->withOptions($this->config->get('transbank.http.options'));
 
         $response = $this->toTransbank($pendingRequest, $request, $method, $endpoint);
