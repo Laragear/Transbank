@@ -43,24 +43,23 @@ class ClientTest extends TestCase
     public function test_sends_properly_configured_request(): void
     {
         $this->mock(Factory::class)
-            ->expects('asJson')
+            ->expects('withoutRedirecting')
             ->andReturnUsing(
                 static function (): MockInterface {
                     $mock = Mockery::mock(PendingRequest::class);
 
-                    $mock->expects('withoutRedirecting')->andReturnSelf();
                     $mock->expects('retry')->with(3)->andReturnSelf();
                     $mock->expects('timeout')->with(10)->andReturnSelf();
                     $mock->expects('withHeaders')
                         ->with([Client::HEADER_KEY => 'key', Client::HEADER_SECRET => 'secret'])
                         ->andReturnSelf();
                     $mock->expects('baseUrl')->with(Client::INTEGRATION_ENDPOINT)->andReturnSelf();
-                    $mock->expects('withUserAgent')->with('php:laragear/transpay/'.Transbank::VERSION)->andReturnSelf();
+                    $mock->expects('withUserAgent')->with('php:laragear/transbank/'.Transbank::VERSION)->andReturnSelf();
                     $mock->expects('withOptions')
-                        ->with(['synchronous' => true, 'json' => json_encode(['foo' => 'bar'])])
+                        ->with(['synchronous' => true])
                         ->andReturnSelf();
 
-                    $mock->expects('send')->with('post', 'https://endpoint/v1.2/')->andReturn(static::response());
+                    $mock->expects('send')->with('post', 'https://endpoint/v1.2/', ['json' => ['foo' => 'bar']])->andReturn(static::response());
 
                     return $mock;
                 }
@@ -78,7 +77,7 @@ class ClientTest extends TestCase
     {
         $this->app->make('config')->set('transbank.http.retries', 10);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -98,7 +97,7 @@ class ClientTest extends TestCase
     {
         $this->app->make('config')->set('transbank.http.timeout', 88);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -118,7 +117,7 @@ class ClientTest extends TestCase
     {
         $this->app->make('config')->set('transbank.http.timeout', 88);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -143,7 +142,7 @@ class ClientTest extends TestCase
     {
         $this->app->make('config')->set('transbank.environment', 'anything-not-production');
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -163,7 +162,7 @@ class ClientTest extends TestCase
     {
         $this->app->make('config')->set('transbank.environment', 'production');
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -179,16 +178,16 @@ class ClientTest extends TestCase
         );
     }
 
-    public function test_merges_config_options(): void
+    public function test_adds_config_options(): void
     {
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
                 $pending->expects('withOptions')
-                    ->with(['foo' => 'bar', 'json' => json_encode(['foo' => 'bar'])])
+                    ->with(['foo' => 'bar'])
                     ->andReturnSelf();
                 $pending->expects('send')->andReturn(static::response());
 
@@ -208,7 +207,7 @@ class ClientTest extends TestCase
 
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -230,7 +229,7 @@ class ClientTest extends TestCase
 
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -249,7 +248,7 @@ class ClientTest extends TestCase
     {
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -273,7 +272,7 @@ class ClientTest extends TestCase
 
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -297,7 +296,7 @@ class ClientTest extends TestCase
 
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -319,7 +318,7 @@ class ClientTest extends TestCase
 
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -347,7 +346,7 @@ class ClientTest extends TestCase
 
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
@@ -375,7 +374,7 @@ class ClientTest extends TestCase
 
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
 
-        $this->mock(Factory::class)->expects('asJson')->andReturnUsing(
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
