@@ -77,7 +77,6 @@ class Client
     public function send(string $method, string $endpoint, ApiRequest $request): Response
     {
         $pendingRequest = $this->http
-            ->asJson()
             ->withoutRedirecting()
             ->retry($this->config->get('transbank.http.retries'))
             ->timeout($this->config->get('transbank.http.timeout'))
