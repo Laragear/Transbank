@@ -15,7 +15,6 @@ use Laragear\Transbank\Exceptions\ServerException;
 use Laragear\Transbank\Exceptions\UnknownException;
 use Laragear\Transbank\Transbank;
 use Throwable;
-use function array_merge;
 use function str_replace;
 
 class Client
@@ -83,7 +82,7 @@ class Client
             ->withHeaders($this->getHeadersKeysForService($request->service))
             ->baseUrl($this->getTransbankBaseEndpoint())
             ->withUserAgent('php:laragear/transpay/'.Transbank::VERSION)
-            ->withOptions(array_merge($this->config->get('transbank.http.options'), ['json' => $request->toJson()]));
+            ->withOptions($this->config->get('transbank.http.options'));
 
         $response = $this->toTransbank($pendingRequest, $request, $method, $endpoint);
 
@@ -119,7 +118,7 @@ class Client
     protected function toTransbank(PendingRequest $request, ApiRequest $api, string $method, string $endpoint): Response
     {
         try {
-            return $request->send($method, $this->setApiVersion($endpoint));
+            return $request->send($method, $this->setApiVersion($endpoint), ['json' => $api->attributes]);
         } catch (ConnectionException $exception) {
             throw new NetworkException('Could not establish connection with Transbank.', $api, null, $exception);
         } catch (Throwable $exception) {
