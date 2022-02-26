@@ -117,8 +117,11 @@ class Client
      */
     protected function toTransbank(PendingRequest $request, ApiRequest $api, string $method, string $endpoint): Response
     {
+        // If the request is reading, we won't send any data, or the request may stall.
+        $data = $method === 'get' ? [] : ['json' => $api->attributes];
+
         try {
-            return $request->send($method, $this->setApiVersion($endpoint), ['json' => $api->attributes]);
+            return $request->send($method, $this->setApiVersion($endpoint), $data);
         } catch (ConnectionException $exception) {
             throw new NetworkException('Could not establish connection with Transbank.', $api, null, $exception);
         } catch (Throwable $exception) {

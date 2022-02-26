@@ -394,5 +394,26 @@ class ClientTest extends TestCase
             'post', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
         );
     }
+
+    public function test_doesnt_sends_api_data_when_method_is_read(): void
+    {
+        $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
+
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
+            static function (): MockInterface {
+                $pending = Mockery::mock(PendingRequest::class)->makePartial();
+
+                $pending->expects('send')->with('get', 'https://endpoint/v1.2/', [])->andReturn(static::response());
+
+                return $pending;
+            }
+        );
+
+        $response = $this->app->make(Client::class)->send(
+            'get', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
+        );
+
+        static::assertTrue($response->ok());
+    }
 }
 
