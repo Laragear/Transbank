@@ -1,5 +1,10 @@
 # Transbank
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/laragear/transbank.svg)](https://packagist.org/packages/laragear/transbank) [![Latest stable test run](https://github.com/Laragear/Transbank/workflows/Tests/badge.svg)](https://github.com/Laragear/Transbank/actions) [![Codecov coverage](https://codecov.io/gh/Laragear/Transbank/branch/1.x/graph/badge.svg?token=LKnve3PkRl)](https://codecov.io/gh/Laragear/Transbank) [![Maintainability](https://api.codeclimate.com/v1/badges/8428413a7e0fd9feb57f/maintainability)](https://codeclimate.com/github/Laragear/Transbank/maintainability) [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=Laragear_Transbank&metric=alert_status)](https://sonarcloud.io/dashboard?id=Laragear_Transbank) [![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/9.x/octane#introduction)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/laragear/transbank.svg)](https://packagist.org/packages/laragear/transbank)
+[![Latest stable test run](https://github.com/Laragear/Transbank/workflows/Tests/badge.svg)](https://github.com/Laragear/Transbank/actions)
+[![Codecov coverage](https://codecov.io/gh/Laragear/Transbank/branch/1.x/graph/badge.svg?token=LKnve3PkRl)](https://codecov.io/gh/Laragear/Transbank)
+[![Maintainability](https://api.codeclimate.com/v1/badges/8428413a7e0fd9feb57f/maintainability)](https://codeclimate.com/github/Laragear/Transbank/maintainability)
+[![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=Laragear_Transbank&metric=alert_status)](https://sonarcloud.io/dashboard?id=Laragear_Transbank)
+[![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/9.x/octane#introduction)
 
 Easy-to-use Transbank SDK for PHP for Webpay, Webpay Mall and Oneclick Mall.
 
@@ -20,11 +25,11 @@ public function confirm(WebpayRequest $payment)
 }
 ```
 
-> Only supports Webpay at the moment. Webpay Mall and Oneclick Mall are planned based on user support.
+> Only supports Webpay at the moment. Webpay Mall and Oneclick Mall are planned based on support.
 
-## Keep this package free
+## Become a sponsor
 
-[![](.assets/patreon.png)](https://patreon.com/packagesforlaravel)[![](.assets/ko-fi.png)](https://ko-fi.com/DarkGhostHunter)[![](.assets/buymeacoffee.png)](https://www.buymeacoffee.com/darkghosthunter)[![](.assets/paypal.png)](https://www.paypal.com/paypalme/darkghosthunter)
+[![](.github/assets/support.png)](https://github.com/sponsors/DarkGhostHunter)
 
 Your support allows me to keep this package free, up-to-date and maintainable. Alternatively, you can **[spread the word!](http://twitter.com/share?text=I%20am%20using%20this%20cool%20PHP%20package&url=https://github.com%2FLaragear%2FReCaptcha&hashtags=PHP,Laravel,Transbank,WebPay)**
 
