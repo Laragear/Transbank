@@ -15,7 +15,7 @@ class RouteRedirect
      *
      * @var string
      */
-    public static $csrfMiddleware = \App\Http\Middleware\VerifyCsrfToken::class;
+    public static $csrfMiddleware = '\App\Http\Middleware\VerifyCsrfToken';
 
     /**
      * Returns a redirection route for failed transactions

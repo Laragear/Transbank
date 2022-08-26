@@ -2,10 +2,10 @@
 
 namespace Laragear\Transbank\Http\Controllers;
 
-use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RedirectController;
+use Illuminate\Routing\UrlGenerator;
 use Illuminate\Support\Str;
 use function abort_if;
 use function http_build_query;
@@ -16,7 +16,7 @@ class FailureRedirectController extends RedirectController
      * Redirects the POST request of a failed transaction from Transbank.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Contracts\Routing\UrlGenerator  $url
+     * @param  \Illuminate\Routing\UrlGenerator  $url
      * @return \Illuminate\Http\RedirectResponse
      */
     public function __invoke(Request $request, UrlGenerator $url): RedirectResponse

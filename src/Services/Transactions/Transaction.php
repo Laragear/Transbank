@@ -47,6 +47,7 @@ class Transaction extends Fluent
             $success = $this->response_code === 0;
 
             if (array_key_exists('status', $this->attributes)) {
+                // @phpstan-ignore-next-line
                 $success = $success && $this->status && $this->status !== self::STATUS_FAILED;
             }
 
