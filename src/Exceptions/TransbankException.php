@@ -18,7 +18,7 @@ interface TransbankException extends Throwable
     /**
      * Returns the Response from Transbank, if any.
      *
-     * @return \Psr\Http\Message\ResponseInterface|null
+     * @return \Illuminate\Http\Client\Response|null
      */
     public function getResponse(): ?Response;
 }
