@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Error;
 use Laragear\Transbank\ApiRequest;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
@@ -37,8 +38,8 @@ class ApiRequestTest extends PHPUnitTestCase
 
     public function test_exception_on_non_existent_key(): void
     {
-        $this->expectError();
-        $this->expectErrorMessage('Undefined array key "bar"');
+        $this->expectException(Error::class);
+        $this->expectExceptionMessage('Undefined array key "bar"');
 
         $request = new ApiRequest('foo', 'bar', [
             'foo' => 'bar'
