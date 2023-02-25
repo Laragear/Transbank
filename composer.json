@@ -18,7 +18,7 @@
         {
             "name": "Italo Israel Baeza Cabrera",
             "email": "darkghosthunter@gmail.com",
-            "homepage": "https://patreon.com/packagesforlaravel"
+            "homepage": "https://github.com/sponsors/DarkGhostHunter"
         }
     ],
     "support": {
@@ -69,15 +69,7 @@
     "funding": [
         {
             "type": "Patreon",
-            "url": "https://patreon.com/PackagesForLaravel"
-        },
-        {
-            "type": "Ko-Fi",
-            "url": "https://ko-fi.com/DarkGhostHunter"
-        },
-        {
-            "type": "Buy me a cofee",
-            "url": "https://www.buymeacoffee.com/darkghosthunter"
+            "url": "https://github.com/sponsors/DarkGhostHunter"
         },
         {
             "type": "Paypal",
