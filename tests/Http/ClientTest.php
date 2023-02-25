@@ -59,7 +59,7 @@ class ClientTest extends TestCase
                         ->with(['synchronous' => true])
                         ->andReturnSelf();
 
-                    $mock->expects('send')->with('post', 'https://endpoint/v1.2/', ['json' => ['foo' => 'bar']])->andReturn(static::response());
+                    $mock->expects('send')->with('post', 'https://endpoint/v1.3/', ['json' => ['foo' => 'bar']])->andReturn(static::response());
 
                     return $mock;
                 }
@@ -403,7 +403,7 @@ class ClientTest extends TestCase
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
-                $pending->expects('send')->with('get', 'https://endpoint/v1.2/', [])->andReturn(static::response());
+                $pending->expects('send')->with('get', 'https://endpoint/v1.3/', [])->andReturn(static::response());
 
                 return $pending;
             }
