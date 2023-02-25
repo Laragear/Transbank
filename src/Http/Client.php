@@ -24,7 +24,7 @@ class Client
      *
      * @var string
      */
-    public const API_VERSION = 'v1.2';
+    public const API_VERSION = 'v1.3';
 
     /**
      * Transbank API Key header name.

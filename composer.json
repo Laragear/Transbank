@@ -18,7 +18,7 @@
         {
             "name": "Italo Israel Baeza Cabrera",
             "email": "darkghosthunter@gmail.com",
-            "homepage": "https://patreon.com/packagesforlaravel"
+            "homepage": "https://github.com/sponsors/DarkGhostHunter"
         }
     ],
     "support": {
@@ -26,18 +26,16 @@
         "issues": "https://github.com/Laragear/Transbank/issues"
     },
     "require": {
-        "php": "^8.0.2",
+        "php": "8.*",
         "ext-json": "*",
-        "illuminate/http": "9.*",
-        "illuminate/log": "9.*",
-        "illuminate/events": "9.*",
-        "guzzlehttp/guzzle": "^7.2"
+        "illuminate/http": "9.*|10.*",
+        "illuminate/log": "9.*|10.*",
+        "illuminate/events": "9.*|10.*",
+        "guzzlehttp/guzzle": "^7.5"
     },
     "require-dev": {
-        "orchestra/testbench": "7.*",
-        "phpunit/phpunit": "^9.5",
-        "mockery/mockery": "^1.4",
-        "jetbrains/phpstorm-attributes": "^1.0"
+        "orchestra/testbench": "^7.22|8.*",
+        "jetbrains/phpstorm-attributes": "*"
     },
     "autoload": {
         "psr-4": {
@@ -62,22 +60,14 @@
                 "Laragear\\Transbank\\TransbankServiceProvider"
             ],
             "aliases": {
-                "ReCaptcha": "Laragear\\Transbank\\Facades\\Webpay"
+                "Webpay": "Laragear\\Transbank\\Facades\\Webpay"
             }
         }
     },
     "funding": [
         {
             "type": "Patreon",
-            "url": "https://patreon.com/PackagesForLaravel"
-        },
-        {
-            "type": "Ko-Fi",
-            "url": "https://ko-fi.com/DarkGhostHunter"
-        },
-        {
-            "type": "Buy me a cofee",
-            "url": "https://www.buymeacoffee.com/darkghosthunter"
+            "url": "https://github.com/sponsors/DarkGhostHunter"
         },
         {
             "type": "Paypal",

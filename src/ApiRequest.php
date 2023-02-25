@@ -3,6 +3,7 @@
 namespace Laragear\Transbank;
 
 use ArrayAccess;
+use Error;
 use Illuminate\Contracts\Support\Jsonable;
 use JsonSerializable;
 
@@ -64,7 +65,7 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
      */
     public function offsetGet(mixed $offset): mixed
     {
-        return $this->attributes[$offset];
+        return $this->attributes[$offset] ?? throw new Error("Undefined array key \"$offset\"");
     }
 
     /**
