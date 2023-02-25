@@ -62,7 +62,7 @@
                 "Laragear\\Transbank\\TransbankServiceProvider"
             ],
             "aliases": {
-                "ReCaptcha": "Laragear\\Transbank\\Facades\\Webpay"
+                "Webpay": "Laragear\\Transbank\\Facades\\Webpay"
             }
         }
     },
