@@ -3,7 +3,6 @@
 namespace Laragear\Transbank\Services\Transactions;
 
 use Illuminate\Support\Fluent;
-use JetBrains\PhpStorm\Pure;
 use function array_key_exists;
 
 class Transaction extends Fluent
@@ -34,7 +33,7 @@ class Transaction extends Fluent
      *
      * @return bool
      */
-    #[Pure]
+    #[\JetBrains\PhpStorm\Pure]
     public function isSuccessful(): bool
     {
         // If TBK data has been received, immediately bail out.
@@ -62,7 +61,7 @@ class Transaction extends Fluent
      *
      * @return bool
      */
-    #[Pure]
+    #[\JetBrains\PhpStorm\Pure]
     public function isNotSuccessful(): bool
     {
         return ! $this->isSuccessful();
@@ -73,7 +72,7 @@ class Transaction extends Fluent
      *
      * @return bool
      */
-    #[Pure]
+    #[\JetBrains\PhpStorm\Pure]
     public function hasFailed(): bool
     {
         return $this->isNotSuccessful();

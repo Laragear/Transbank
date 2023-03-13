@@ -3,7 +3,6 @@
 namespace Laragear\Transbank\Services\Concerns;
 
 use Illuminate\Http\Client\Response;
-use JetBrains\PhpStorm\Pure;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Services\Transactions\Transaction;
 use function array_keys;
@@ -18,7 +17,7 @@ trait SendsRequests
      * @param  array  $attributes
      * @return \Laragear\Transbank\ApiRequest
      */
-    #[Pure]
+    #[\JetBrains\PhpStorm\Pure]
     protected function request(string $action, array $attributes = []): ApiRequest
     {
         return new ApiRequest(static::SERVICE_NAME, $action, $attributes);

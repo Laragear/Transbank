@@ -3,7 +3,6 @@
 namespace Laragear\Transbank\Exceptions;
 
 use Illuminate\Http\Client\Response;
-use JetBrains\PhpStorm\Pure;
 use Laragear\Transbank\ApiRequest;
 use Throwable;
 
@@ -17,7 +16,7 @@ trait HandlesException
      * @param  \Illuminate\Http\Client\Response|null  $response
      * @param  Throwable|null  $previous
      */
-    #[Pure]
+    #[\JetBrains\PhpStorm\Pure]
     public function __construct(
         string $message = '',
         protected ?ApiRequest $apiRequest = null,

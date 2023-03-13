@@ -7,7 +7,6 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
-use JetBrains\PhpStorm\ArrayShape;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Exceptions\ClientException;
 use Laragear\Transbank\Exceptions\NetworkException;
@@ -97,7 +96,7 @@ class Client
      * @param  string  $service
      * @return array
      */
-    #[ArrayShape([self::HEADER_KEY => 'string', self::HEADER_SECRET => 'string'])]
+    #[\JetBrains\PhpStorm\ArrayShape([self::HEADER_KEY => 'string', self::HEADER_SECRET => 'string'])]
     protected function getHeadersKeysForService(string $service): array
     {
         return [
