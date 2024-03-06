@@ -9,6 +9,9 @@ use function redirect;
 
 class Response implements Stringable, Responsable
 {
+    /**
+     * The name of the key holding the token.
+     */
     public const WEBPAY_TOKEN = 'token_ws';
 
     /**
@@ -28,8 +31,6 @@ class Response implements Stringable, Responsable
 
     /**
      * Returns the transaction token that identifies it on Transbank.
-     *
-     * @return string
      */
     public function getToken(): string
     {
@@ -38,8 +39,6 @@ class Response implements Stringable, Responsable
 
     /**
      * Returns the transaction URL where the transaction can be retrieved.
-     *
-     * @return string
      */
     public function getUrl(): string
     {
@@ -48,8 +47,6 @@ class Response implements Stringable, Responsable
 
     /**
      * Transforms the Response into a String for Webpay GET redirects.
-     *
-     * @return string
      */
     public function __toString(): string
     {
@@ -58,9 +55,6 @@ class Response implements Stringable, Responsable
 
     /**
      * Create an HTTP response that represents the object.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function toResponse($request): RedirectResponse
     {

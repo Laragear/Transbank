@@ -25,6 +25,8 @@ public function confirm(WebpayRequest $payment)
 }
 ```
 
+> [!NOTE]
+>
 > Only supports Webpay at the moment. Webpay Mall and Oneclick Mall are planned based on support.
 
 ## Become a sponsor
@@ -35,8 +37,7 @@ Your support allows me to keep this package free, up-to-date and maintainable. A
 
 ## Requisites:
 
-* Laravel 9.x, or later
-* PHP 8.0 or later
+* Laravel 10, or later
 
 # Installation
 
@@ -101,6 +102,8 @@ To operate in production mode, where all transaction will be real, you will need
 TRANSBANK_ENV=production
 ```
 
+> [!NOTE]
+>
 > Production keys don't work on _integration_ and vice versa. 
 
 ## Middleware endpoint protection
@@ -153,7 +156,9 @@ Route::get('failed-transaction', function () {
 RouteRedirect::as('confirm', 'failed-transaction');
 ```
 
-> If you're using a different middleware to verify CSRF tokens, set the class in `RouteRedirect::$csrfMiddleware`.  
+> [!IMPORTANT]
+>
+> If you're using you own middleware to verify CSRF/XSRF tokens, set the class in `RouteRedirect::$csrfMiddleware`.  
 
 ## Events
 
@@ -167,6 +172,8 @@ You will be able to hear all transactions started and completed. This package se
 
 All exceptions implement `TransbankException`, so you can easily catch and check what happened.
 
+> [!IMPORTANT]
+>
 > Transactions properly rejected by banks or credit card issuers **do not** throw exceptions.
 
 There are 4 types of exceptions:

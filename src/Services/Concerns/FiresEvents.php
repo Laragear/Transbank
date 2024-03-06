@@ -13,8 +13,6 @@ trait FiresEvents
 {
     /**
      * Fires a Transaction Started event.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest
      */
     protected function fireCreating(ApiRequest $apiRequest): void
     {
@@ -23,9 +21,6 @@ trait FiresEvents
 
     /**
      * Fires a Transaction Created event.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest
-     * @param  \Laragear\Transbank\Services\Transactions\Response  $response
      */
     protected function fireCreated(ApiRequest $apiRequest, Response $response): void
     {
@@ -34,9 +29,6 @@ trait FiresEvents
 
     /**
      * Fires a Transaction Completed event.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest
-     * @param  \Laragear\Transbank\Services\Transactions\Transaction  $transaction
      */
     protected function fireCompleted(ApiRequest $apiRequest, Transaction $transaction): void
     {

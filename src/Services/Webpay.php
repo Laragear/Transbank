@@ -14,25 +14,20 @@ class Webpay
 
     /**
      * Integrations Keys for this service.
-     *
-     * @var int
      */
     public const INTEGRATION_KEY = 597055555532;
 
     // Service names.
     public const SERVICE_NAME = 'webpay';
 
+    // Action names
     public const ACTION_CREATE = 'create';
     public const ACTION_COMMIT = 'commit';
     public const ACTION_STATUS = 'status';
     public const ACTION_REFUND = 'refund';
     public const ACTION_CAPTURE = 'capture';
 
-    /**
-     * The API base URI.
-     *
-     * @var string
-     */
+    // The API base URI.
     public const ENDPOINT_BASE = 'rswebpaytransaction/api/webpay/{api_version}/';
 
     // Endpoints for the transactions.
@@ -46,10 +41,6 @@ class Webpay
 
     /**
      * Create a new Webpay instance.
-     *
-     * @param  \Illuminate\Contracts\Events\Dispatcher  $event
-     * @param  \Psr\Log\LoggerInterface  $logger
-     * @param  \Laragear\Transbank\Http\Client  $client
      */
     public function __construct(public Dispatcher $event, public LoggerInterface $logger, public Client $client)
     {
@@ -58,11 +49,6 @@ class Webpay
 
     /**
      * Creates a ApiRequest on Transbank, returns a response from it.
-     *
-     * @param  string  $buyOrder
-     * @param  int|float  $amount
-     * @param  string  $returnUrl
-     * @return \Laragear\Transbank\Services\Transactions\Response
      */
     public function create(string $buyOrder, int|float $amount, string $returnUrl): Transactions\Response
     {
@@ -88,9 +74,6 @@ class Webpay
 
     /**
      * Commits a transaction immediately
-     *
-     * @param  string  $token
-     * @return \Laragear\Transbank\Services\Transactions\Transaction
      */
     public function commit(string $token): Transactions\Transaction
     {
@@ -110,9 +93,6 @@ class Webpay
 
     /**
      * Returns the status of a non-expired transaction by its token.
-     *
-     * @param  string  $token
-     * @return \Laragear\Transbank\Services\Transactions\Transaction
      */
     public function status(string $token): Transactions\Transaction
     {
@@ -129,10 +109,6 @@ class Webpay
 
     /**
      * Refunds partially or totally a given credit-card charge amount.
-     *
-     * @param  string  $token
-     * @param  int|float  $amount
-     * @return \Laragear\Transbank\Services\Transactions\Transaction
      *
      */
     public function refund(string $token, int|float $amount): Transactions\Transaction
@@ -156,12 +132,6 @@ class Webpay
      * Creates a Capture ApiRequest on Transbank servers, returns a response.
      *
      * This transaction type only works for credit cards, and "holds" the amount up to 7 days.
-     *
-     * @param  string  $token
-     * @param  string  $buyOrder
-     * @param  int  $code
-     * @param  int|float  $amount
-     * @return \Laragear\Transbank\Services\Transactions\Transaction
      *
      */
     public function capture(string $token, string $buyOrder, int $code, int|float $amount): Transactions\Transaction

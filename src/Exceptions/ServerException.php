@@ -10,8 +10,6 @@ class ServerException extends RuntimeException implements TransbankException
 
     /**
      * The log level to report to the app.
-     *
-     * @var int
      */
     public const LOG_LEVEL = LOG_CRIT;
 }

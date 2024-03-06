@@ -14,10 +14,6 @@ class FailureRedirectController extends RedirectController
 {
     /**
      * Redirects the POST request of a failed transaction from Transbank.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Illuminate\Routing\UrlGenerator  $url
-     * @return \Illuminate\Http\RedirectResponse
      */
     public function __invoke(Request $request, UrlGenerator $url): RedirectResponse
     {

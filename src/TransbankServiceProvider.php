@@ -2,8 +2,8 @@
 
 namespace Laragear\Transbank;
 
-use Illuminate\Contracts\Config\Repository;
-use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Config\Repository as ConfigContract;
+use Illuminate\Contracts\Events\Dispatcher as EventContract;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
 use Laragear\Transbank\Events\TransactionCreated;
@@ -14,8 +14,6 @@ class TransbankServiceProvider extends ServiceProvider
 
     /**
      * Register bindings in the container.
-     *
-     * @return void
      */
     public function register(): void
     {
@@ -27,13 +25,8 @@ class TransbankServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
-     *
-     * @param  \Illuminate\Contracts\Events\Dispatcher  $dispatcher
-     * @param  \Illuminate\Contracts\Config\Repository  $config
-     * @param  \Illuminate\Routing\Router  $router
-     * @return void
      */
-    public function boot(Router $router, Repository $config, Dispatcher $dispatcher): void
+    public function boot(Router $router, ConfigContract $config, EventContract $dispatcher): void
     {
         $router->aliasMiddleware('transbank.protect', Http\Middleware\ProtectTransaction::class);
 

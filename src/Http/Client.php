@@ -20,44 +20,31 @@ class Client
 {
     /**
      * Current API Version to use on Transbank Servers.
-     *
-     * @var string
      */
     public const API_VERSION = 'v1.3';
 
     /**
      * Transbank API Key header name.
-     *
-     * @var string
      */
     public const HEADER_KEY = 'Tbk-Api-Key-Id';
 
     /**
      * Transbank API Shared Secret header name.
-     *
-     * @var string
      */
     public const HEADER_SECRET = 'Tbk-Api-Key-Secret';
 
     /**
      * Production endpoint server.
-     *
-     * @var string
      */
     public const PRODUCTION_ENDPOINT = 'https://webpay3g.transbank.cl/';
 
     /**
      * Integration endpoint server.
-     *
-     * @var string
      */
     public const INTEGRATION_ENDPOINT = 'https://webpay3gint.transbank.cl/';
 
     /**
      * Create a new HTTP Client instance.
-     *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
-     * @param  \Illuminate\Http\Client\Factory  $http
      */
     public function __construct(protected ConfigContract $config, protected HttpFactory $http)
     {
@@ -66,11 +53,6 @@ class Client
 
     /**
      * Sends a transaction to Transbank servers.
-     *
-     * @param  string  $method
-     * @param  string  $endpoint
-     * @param  \Laragear\Transbank\ApiRequest  $request
-     * @return \Illuminate\Http\Client\Response
      */
     public function send(string $method, string $endpoint, ApiRequest $request): Response
     {
@@ -92,11 +74,7 @@ class Client
 
     /**
      * Returns the headers for the service with its key and secret.
-     *
-     * @param  string  $service
-     * @return array
      */
-    #[\JetBrains\PhpStorm\ArrayShape([self::HEADER_KEY => 'string', self::HEADER_SECRET => 'string'])]
     protected function getHeadersKeysForService(string $service): array
     {
         return [
@@ -107,12 +85,6 @@ class Client
 
     /**
      * Sends the request to Transbank servers.
-     *
-     * @param  \Illuminate\Http\Client\PendingRequest  $request
-     * @param  \Laragear\Transbank\ApiRequest  $api
-     * @param  string  $method
-     * @param  string  $endpoint
-     * @return \Illuminate\Http\Client\Response
      */
     protected function toTransbank(PendingRequest $request, ApiRequest $api, string $method, string $endpoint): Response
     {
@@ -130,10 +102,6 @@ class Client
 
     /**
      * Replace the API Version from the endpoint.
-     *
-     * @param  string  $endpoint
-     *
-     * @return string
      */
     protected function setApiVersion(string $endpoint): string
     {
@@ -142,10 +110,6 @@ class Client
 
     /**
      * Checks if the Response is an error or not.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest
-     * @param  \Illuminate\Http\Client\Response  $response
-     * @return void
      */
     protected function throwExceptionOnResponseError(ApiRequest $apiRequest, Response $response): void
     {
@@ -170,9 +134,6 @@ class Client
 
     /**
      * Returns the error message from the Transbank response.
-     *
-     * @param  \Illuminate\Http\Client\Response  $response
-     * @return string
      */
     protected function getErrorMessage(Response $response): string
     {
@@ -181,12 +142,10 @@ class Client
 
     /**
      * Return the string used to reach Transbank servers.
-     *
-     * @return string
      */
     protected function getTransbankBaseEndpoint(): string
     {
-        return $this->config->get('transbank.environment') === 'production'
+        return $this->config->get('transbank.environment') === Transbank::PRODUCTION_ENV
             ? static::PRODUCTION_ENDPOINT
             : static::INTEGRATION_ENDPOINT;
     }

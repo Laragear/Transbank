@@ -1,7 +1,8 @@
 <?php
 
-namespace Tests;
+namespace Tests\Http\Controllers;
 
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
 use Illuminate\Session\Middleware\StartSession;
@@ -9,13 +10,13 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Laragear\Transbank\Http\Controllers\FailureRedirectController;
 use Laragear\Transbank\RouteRedirect;
-use Orchestra\Testbench\Http\Middleware\VerifyCsrfToken;
+use Tests\TestCase;
 
 class FailureRedirectControllerTest extends TestCase
 {
     protected function tearDown(): void
     {
-        RouteRedirect::$csrfMiddleware = \App\Http\Middleware\VerifyCsrfToken::class;
+        RouteRedirect::$csrfMiddleware = VerifyCsrfToken::class;
 
         parent::tearDown();
     }
@@ -50,7 +51,7 @@ class FailureRedirectControllerTest extends TestCase
         static::assertSame([
             ShareErrorsFromSession::class,
             StartSession::class,
-            \App\Http\Middleware\VerifyCsrfToken::class,
+            VerifyCsrfToken::class,
         ], $route->excludedMiddleware());
         static::assertSame(['destination' => 'confirm', 'status' => 303], $route->defaults);
     }

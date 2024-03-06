@@ -11,15 +11,11 @@ class WebpayRequest extends FormRequest
 {
     /**
      * The received transaction.
-     *
-     * @var \Laragear\Transbank\Services\Transactions\Transaction|null
      */
     protected ?Transaction $transaction = null;
 
     /**
      * Validate the given class instance.
-     *
-     * @return void
      */
     public function validateResolved(): void
     {
@@ -28,9 +24,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Commits the transaction if the callback or value is truthy.
-     *
-     * @param  mixed  $condition
-     * @return \Laragear\Transbank\Services\Transactions\Transaction|null
      */
     public function commitWhen(mixed $condition): ?Transaction
     {
@@ -43,9 +36,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Commits the transaction if the callback or value is falsy.
-     *
-     * @param  mixed  $condition
-     * @return \Laragear\Transbank\Services\Transactions\Transaction|null
      */
     public function commitUnless(mixed $condition): ?Transaction
     {
@@ -58,10 +48,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Parses the condition to evaluate.
-     *
-     * @param  mixed  $condition
-     * @param  bool  $truthy
-     * @return bool
      */
     protected function parseCondition(mixed $condition, bool $truthy): bool
     {
@@ -74,8 +60,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Commits and returns a transaction in Webpay only once.
-     *
-     * @return \Laragear\Transbank\Services\Transactions\Transaction
      */
     public function transaction(): Transaction
     {
@@ -84,8 +68,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Commits and returns a transaction in Webpay.
-     *
-     * @return \Laragear\Transbank\Services\Transactions\Transaction
      */
     protected function commit(): Transaction
     {
@@ -94,8 +76,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Commit the transaction and return if it was successful.
-     *
-     * @return bool
      */
     public function isSuccessful(): bool
     {
@@ -104,8 +84,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Commits the transaction and return if it was not successful.
-     *
-     * @return bool
      */
     public function isNotSuccessful(): bool
     {
@@ -114,8 +92,6 @@ class WebpayRequest extends FormRequest
 
     /**
      * Returns the Transaction Token from the request.
-     *
-     * @return string
      */
     protected function token(): string
     {

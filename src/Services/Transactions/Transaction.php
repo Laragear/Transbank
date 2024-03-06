@@ -18,10 +18,6 @@ class Transaction extends Fluent
 
     /**
      * Creates a new Transaction instance.
-     *
-     * @param  string  $service
-     * @param  string  $action
-     * @param  array  $attributes
      */
     public function __construct(public string $service, public string $action, array $attributes)
     {
@@ -33,7 +29,6 @@ class Transaction extends Fluent
      *
      * @return bool
      */
-    #[\JetBrains\PhpStorm\Pure]
     public function isSuccessful(): bool
     {
         // If TBK data has been received, immediately bail out.
@@ -58,10 +53,7 @@ class Transaction extends Fluent
 
     /**
      * Check the transaction has failed.
-     *
-     * @return bool
      */
-    #[\JetBrains\PhpStorm\Pure]
     public function isNotSuccessful(): bool
     {
         return ! $this->isSuccessful();
@@ -69,10 +61,7 @@ class Transaction extends Fluent
 
     /**
      * Check the transaction has failed.
-     *
-     * @return bool
      */
-    #[\JetBrains\PhpStorm\Pure]
     public function hasFailed(): bool
     {
         return $this->isNotSuccessful();
@@ -80,8 +69,6 @@ class Transaction extends Fluent
 
     /**
      * Returns the Credit Card numbers as an integer, or null if it doesn't exist.
-     *
-     * @return int|null
      */
     public function getCreditCardNumber(): ?int
     {

@@ -10,13 +10,7 @@ trait HandlesException
 {
     /**
      * Transbank Exception constructor.
-     *
-     * @param  string  $message
-     * @param  \Laragear\Transbank\ApiRequest|null  $apiRequest
-     * @param  \Illuminate\Http\Client\Response|null  $response
-     * @param  Throwable|null  $previous
      */
-    #[\JetBrains\PhpStorm\Pure]
     public function __construct(
         string $message = '',
         protected ?ApiRequest $apiRequest = null,
@@ -28,8 +22,6 @@ trait HandlesException
 
     /**
      * Returns the ApiRequest of this exception, if any.
-     *
-     * @return \Laragear\Transbank\ApiRequest|null
      */
     public function getApiRequest(): ?ApiRequest
     {
@@ -38,8 +30,6 @@ trait HandlesException
 
     /**
      * Returns the Response from Transbank, if any.
-     *
-     * @return \Illuminate\Http\Client\Response|null
      */
     public function getResponse(): ?Response
     {

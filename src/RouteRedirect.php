@@ -2,6 +2,7 @@
 
 namespace Laragear\Transbank;
 
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Route as HttpRoute;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
@@ -12,17 +13,11 @@ class RouteRedirect
 {
     /**
      * Middleware class that verifies CSRF tokens.
-     *
-     * @var string
      */
-    public static $csrfMiddleware = 'App\Http\Middleware\VerifyCsrfToken';
+    public static $csrfMiddleware = VerifyCsrfToken::class;
 
     /**
      * Returns a redirection route for failed transactions
-     *
-     * @param  string  $path
-     * @param  string|null  $route
-     * @return \Illuminate\Routing\Route
      */
     public static function as(string $path, string $route = null, int $status = 303): HttpRoute
     {

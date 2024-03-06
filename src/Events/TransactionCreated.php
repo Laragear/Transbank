@@ -9,9 +9,6 @@ class TransactionCreated
 {
     /**
      * Create a new Transaction Created event.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest  Data sent to Transbank.
-     * @param  \Laragear\Transbank\Services\Transactions\Response  $response  Raw response from Transbank.
      */
     public function __construct(public ApiRequest $apiRequest, public Response $response)
     {

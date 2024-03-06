@@ -13,10 +13,6 @@ class ProtectTransaction
 {
     /**
      * Handle the incoming Transbank POST Request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
-     * @return mixed
      */
     public function handle(Request $request, Closure $next): mixed
     {
@@ -27,9 +23,6 @@ class ProtectTransaction
 
     /**
      * Check if the request contains a valid token from Transbank.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return bool
      */
     protected function requestComesFromTransbank(Request $request): bool
     {
@@ -44,9 +37,6 @@ class ProtectTransaction
 
     /**
      * Returns the incoming transaction token from Transbank, if any.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return string|null
      */
     protected function token(Request $request): ?string
     {

@@ -11,10 +11,6 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
 {
     /**
      * Create a new API Request instance.
-     *
-     * @param  string  $service
-     * @param  string  $action
-     * @param  array  $attributes
      */
     public function __construct(public string $service, public string $action, public array $attributes = [])
     {
@@ -23,9 +19,6 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
 
     /**
      * Convert the object to its JSON representation.
-     *
-     * @param  int  $options
-     * @return string
      */
     public function toJson($options = 0): string
     {
@@ -38,8 +31,6 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
 
     /**
      * Specify data which should be serialized to JSON.
-     *
-     * @return array
      */
     public function jsonSerialize(): array
     {
@@ -48,9 +39,6 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
 
     /**
      * Whether an offset exists.
-     *
-     * @param  mixed  $offset
-     * @return bool
      */
     public function offsetExists(mixed $offset): bool
     {
@@ -59,9 +47,6 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
 
     /**
      * Offset to retrieve.
-     *
-     * @param  mixed  $offset
-     * @return mixed
      */
     public function offsetGet(mixed $offset): mixed
     {
@@ -70,10 +55,6 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
 
     /**
      * Offset to set.
-     *
-     * @param  mixed  $offset
-     * @param  mixed  $value
-     * @return void
      */
     public function offsetSet(mixed $offset, mixed $value): void
     {
@@ -82,9 +63,6 @@ class ApiRequest implements JsonSerializable, ArrayAccess, Jsonable
 
     /**
      * Offset to unset.
-     *
-     * @param  mixed  $offset
-     * @return void
      */
     public function offsetUnset(mixed $offset): void
     {

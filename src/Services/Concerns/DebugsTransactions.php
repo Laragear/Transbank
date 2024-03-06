@@ -9,9 +9,6 @@ trait DebugsTransactions
 {
     /**
      * Debugs a given operation.
-     *
-     * @param  string  $message
-     * @param  array  $context
      */
     protected function log(string $message, array $context = []): void
     {
@@ -20,8 +17,6 @@ trait DebugsTransactions
 
     /**
      * Debugs a transaction before creating it.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest
      */
     protected function logCreating(ApiRequest $apiRequest): void
     {
@@ -30,10 +25,6 @@ trait DebugsTransactions
 
     /**
      * Debugs a given operation.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest
-     * @param  \Illuminate\Http\Client\Response  $response
-     * @param  string|null  $token
      */
     protected function logResponse(ApiRequest $apiRequest, Response $response, string $token = null): void
     {

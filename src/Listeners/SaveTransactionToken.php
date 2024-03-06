@@ -10,9 +10,6 @@ class SaveTransactionToken
 {
     /**
      * Create a new listener instance.
-     *
-     * @param  \Illuminate\Contracts\Config\Repository  $config
-     * @param  \Illuminate\Contracts\Cache\Factory  $cache
      */
     public function __construct(protected ConfigContract $config, protected CacheContract $cache)
     {
@@ -21,9 +18,6 @@ class SaveTransactionToken
 
     /**
      * Handle the fired event.
-     *
-     * @param  \Laragear\Transbank\Events\TransactionCreated  $event
-     * @return void
      */
     public function handle(TransactionCreated $event): void
     {

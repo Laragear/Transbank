@@ -12,12 +12,7 @@ trait SendsRequests
 {
     /**
      * Creates a new API Request.
-     *
-     * @param  string  $action
-     * @param  array  $attributes
-     * @return \Laragear\Transbank\ApiRequest
      */
-    #[\JetBrains\PhpStorm\Pure]
     protected function request(string $action, array $attributes = []): ApiRequest
     {
         return new ApiRequest(static::SERVICE_NAME, $action, $attributes);
@@ -25,10 +20,6 @@ trait SendsRequests
 
     /**
      * Sends a ApiRequest to Transbank, returns a response array.
-     *
-     * @param  \Laragear\Transbank\ApiRequest  $apiRequest
-     * @param  array  $replace
-     * @return \Illuminate\Http\Client\Response
      */
     protected function send(ApiRequest $apiRequest, array $replace = []): Response
     {
@@ -41,10 +32,6 @@ trait SendsRequests
 
     /**
      * Returns the Transaction object from Transbank response.
-     *
-     * @param  string  $action
-     * @param  \Illuminate\Http\Client\Response  $response
-     * @return \Laragear\Transbank\Services\Transactions\Transaction
      */
     protected function transaction(string $action, Response $response): Transaction
     {
