@@ -26,7 +26,7 @@ trait DebugsTransactions
     /**
      * Debugs a given operation.
      */
-    protected function logResponse(ApiRequest $apiRequest, Response $response, string $token = null): void
+    protected function logResponse(ApiRequest $apiRequest, Response $response, ?string $token = null): void
     {
         $context = ['api_request' => $apiRequest, 'raw_response' => $response->json()];
 
