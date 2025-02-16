@@ -1,8 +1,8 @@
 # Transbank
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/laragear/transbank.svg)](https://packagist.org/packages/laragear/transbank)
 [![Latest stable test run](https://github.com/Laragear/Transbank/workflows/Tests/badge.svg)](https://github.com/Laragear/Transbank/actions)
-[![Codecov coverage](https://codecov.io/gh/Laragear/Transbank/branch/1.x/graph/badge.svg?token=LKnve3PkRl)](https://codecov.io/gh/Laragear/Transbank)
-[![Maintainability](https://api.codeclimate.com/v1/badges/8428413a7e0fd9feb57f/maintainability)](https://codeclimate.com/github/Laragear/Transbank/maintainability)
+[![Codecov Coverage](https://codecov.io/gh/Laragear/Transbank/graph/badge.svg?token=LKnve3PkRl)](https://codecov.io/gh/Laragear/Transbank)
+[![Maintainability](https://qlty.sh/badges/c6975072-d953-4d0a-ab6a-1c4e475db2f5/maintainability.svg)](https://qlty.sh/gh/Laragear/projects/Transbank)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=Laragear_Transbank&metric=alert_status)](https://sonarcloud.io/dashboard?id=Laragear_Transbank)
 [![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/9.x/octane#introduction)
 
@@ -37,7 +37,7 @@ Your support allows me to keep this package free, up-to-date and maintainable. A
 
 ## Requisites:
 
-* Laravel 10, or later
+* Laravel 11, or later
 
 # Installation
 
