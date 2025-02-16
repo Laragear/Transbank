@@ -9,6 +9,7 @@ use Laragear\Transbank\Http\Middleware\ProtectTransaction;
 use Laragear\Transbank\Listeners\SaveTransactionToken;
 use Laragear\Transbank\Services\Webpay;
 use Laragear\Transbank\TransbankServiceProvider;
+use Orchestra\Testbench\Attributes\DefineEnvironment;
 
 class ServiceProviderTest extends TestCase
 {
@@ -44,9 +45,7 @@ class ServiceProviderTest extends TestCase
         static::assertArrayNotHasKey(TransactionCreated::class, $listeners);
     }
 
-    /**
-     * @define-env enablesProtection
-     */
+    #[DefineEnvironment('enablesProtection')]
     public function test_registers_listener_when_protection_is_enabled(): void
     {
         $listeners = $this->app->make('events')->getRawListeners(TransactionCreated::class);
