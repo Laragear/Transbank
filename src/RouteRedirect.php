@@ -19,7 +19,7 @@ class RouteRedirect
     /**
      * Returns a redirection route for failed transactions
      */
-    public static function as(string $path, string $route = null, int $status = 303): HttpRoute
+    public static function as(string $path, ?string $route = null, int $status = 303): HttpRoute
     {
         return Route::post($path, FailureRedirectController::class)
             ->defaults('destination', $route ?? $path)
