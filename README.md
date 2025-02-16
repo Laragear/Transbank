@@ -280,6 +280,6 @@ This also handles which cache store to use, and which prefix to use when storing
 
 This specific package version is licensed under the terms of the [MIT License](LICENSE.md), at time of publishing.
 
-[Laravel](https://laravel.com) is a Trademark of [Taylor Otwell](https://github.com/TaylorOtwell/). Copyright © 2011-2022 Laravel LLC.
+[Laravel](https://laravel.com) is a Trademark of [Taylor Otwell](https://github.com/TaylorOtwell/). Copyright © 2011-2025 Laravel LLC.
 
 `Redcompra`, `Webpay`, `Oneclick`, `Onepay`, `Patpass` and `Transbank` are trademarks of [Transbank S.A.](https://www.transbank.cl/). This package and its author are not associated with Transbank S.A.
