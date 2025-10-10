@@ -4,6 +4,7 @@ namespace Laragear\Transbank\Services\Transactions;
 
 use Illuminate\Support\Fluent;
 use function array_key_exists;
+use function in_array;
 
 class Transaction extends Fluent
 {
@@ -13,7 +14,7 @@ class Transaction extends Fluent
     public const STATUS_NULLIFIED = 'NULLIFIED';
     public const STATUS_REVERSED = 'REVERSED';
     public const STATUS_PARTIALLY_NULLIFIED = 'PARTIALLY_NULLIFIED';
-    public const STATUS_CAPTURED = 'PARTIALLY_NULLIFIED';
+    public const STATUS_CAPTURED = 'CAPTURED';
     public const STATUS_FAILED = 'FAILED';
 
     /**
@@ -42,7 +43,13 @@ class Transaction extends Fluent
 
             if (array_key_exists('status', $this->attributes)) {
                 // @phpstan-ignore-next-line
-                $success = $success && $this->status && $this->status !== self::STATUS_FAILED;
+                $success = $success && $this->status && in_array($this->status, [
+                    static::STATUS_AUTHORIZED,
+                    static::STATUS_NULLIFIED,
+                    static::STATUS_REVERSED,
+                    static::STATUS_PARTIALLY_NULLIFIED,
+                    static::STATUS_CAPTURED
+                ]);
             }
 
             return $success;
