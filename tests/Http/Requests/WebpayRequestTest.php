@@ -172,4 +172,17 @@ class WebpayRequestTest extends TestCase
         $this->get('confirm?token_ws=foo')->assertOk()->assertJson(['true', 'false']);
         $this->get('confirm?token_ws=bar')->assertOk()->assertJson(['false', 'true']);
     }
+
+    public function test_checks_if_request_is_valid(): void
+    {
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return [
+                $request->isValid() ? 'true' : 'false',
+                $request->isNotValid() ? 'true' : 'false',
+            ];
+        });
+
+        $this->get('confirm?token_ws=foo')->assertOk()->assertJson(['true', 'false']);
+        $this->get('confirm')->assertOk()->assertJson(['false', 'true']);
+    }
 }
