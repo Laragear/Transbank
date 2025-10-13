@@ -42,9 +42,9 @@ class WebpayRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'TBK_TOKEN' => 'sometimes|required_with:TBK_ORDEN_COMPRA|size:64',
-            'TBK_ORDEN_COMPRA' => 'sometimes|required_with:TBK_TOKEN',
-            'token_ws' => 'sometimes|required_without:TBK_TOKEN|size:64',
+            'TBK_TOKEN' => 'required_with:TBK_ORDEN_COMPRA|size:64',
+            'TBK_ORDEN_COMPRA' => 'required_with:TBK_TOKEN',
+            'token_ws' => 'required_without:TBK_TOKEN|size:64',
         ];
     }
 
@@ -55,8 +55,10 @@ class WebpayRequest extends FormRequest
      */
     protected function getRedirectUrl(): string
     {
-        if (is_callable(static::$validate)) {
-            return $this->container->call(static::$validate);
+        if (static::$validate instanceof Closure) {
+            return $this->container->call(static::$validate, [
+                WebpayRequest::class => $this,
+            ]);
         }
 
         return parent::getRedirectUrl();

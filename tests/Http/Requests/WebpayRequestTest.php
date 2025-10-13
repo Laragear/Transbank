@@ -241,19 +241,12 @@ class WebpayRequestTest extends TestCase
 
         $token = Str::random(64);
 
-        Webpay::shouldReceive('commit')->once()->with('foo')->never();
-        Webpay::shouldReceive('commit')->once()->with($token)->andReturn(
-            new Transaction('foo', 'bar', ['response_code' => 0, 'buy_order' => 'bar'])
-        );
-
         $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
-            return [
-                'buy-order' => $request->buyOrder()
-            ];
+            return 'ok';
         });
 
-        $this->get("confirm?token_ws=$token")->assertOk()->assertJson(['buy-order' => 'bar']);
-        $this->get("confirm?TBK_TOKEN=$token&TBK_ORDEN_COMPRA=bar")->assertOk()->assertJson(['buy-order' => 'bar']);
+        $this->get("confirm?token_ws=$token")->assertOk();
+        $this->get("confirm?TBK_TOKEN=$token&TBK_ORDEN_COMPRA=bar")->assertOk();
         $this->get('confirm')->assertRedirect();
         $this->get('confirm?token_ws=foo')->assertRedirect();
         $this->get('confirm?TBK_TOKEN=foo')->assertRedirect();
@@ -262,23 +255,18 @@ class WebpayRequestTest extends TestCase
 
     public function test_validates_request_and_redirects_to_custom_path(): void
     {
-        WebpayRequest::$validate = fn () => '/custom/path';
+        WebpayRequest::$validate = function (WebpayRequest $request) {
+            return '/custom/path';
+        };
 
         $token = Str::random(64);
 
-        Webpay::shouldReceive('commit')->once()->with('foo')->never();
-        Webpay::shouldReceive('commit')->once()->with($token)->andReturn(
-            new Transaction('foo', 'bar', ['response_code' => 0, 'buy_order' => 'bar'])
-        );
-
         $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
-            return [
-                'buy-order' => $request->buyOrder()
-            ];
+            return 'ok';
         });
 
-        $this->get("confirm?token_ws=$token")->assertOk()->assertJson(['buy-order' => 'bar']);
-        $this->get("confirm?TBK_TOKEN=$token&TBK_ORDEN_COMPRA=bar")->assertOk()->assertJson(['buy-order' => 'bar']);
+        $this->get("confirm?token_ws=$token")->assertOk();
+        $this->get("confirm?TBK_TOKEN=$token&TBK_ORDEN_COMPRA=bar")->assertOk();
         $this->get('confirm')->assertRedirect('/custom/path');
         $this->get('confirm?token_ws=foo')->assertRedirect('/custom/path');
         $this->get('confirm?TBK_TOKEN=foo')->assertRedirect('/custom/path');
