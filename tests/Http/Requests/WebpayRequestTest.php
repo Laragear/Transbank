@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Requests;
 
+use Illuminate\Support\Str;
 use Laragear\Transbank\Facades\Webpay;
 use Laragear\Transbank\Http\Requests\WebpayRequest;
 use Laragear\Transbank\Services\Transactions\Transaction;
@@ -9,6 +10,20 @@ use Tests\TestCase;
 
 class WebpayRequestTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        WebpayRequest::$validate = false;
+    }
+
+    protected function tearDown(): void
+    {
+        WebpayRequest::$validate = false;
+
+        parent::tearDown();
+    }
+
     public function test_commits_transaction(): void
     {
         Webpay::shouldReceive('commit')->once()->with('foo')->andReturn(
@@ -218,5 +233,43 @@ class WebpayRequestTest extends TestCase
         });
 
         $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertOk()->assertJson(['buy-order' => 'bar']);
+    }
+
+    public function test_validates_request(): void
+    {
+        WebpayRequest::$validate = true;
+
+        $token = Str::random(64);
+
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return 'ok';
+        });
+
+        $this->get("confirm?token_ws=$token")->assertOk();
+        $this->get("confirm?TBK_TOKEN=$token&TBK_ORDEN_COMPRA=bar")->assertOk();
+        $this->get('confirm')->assertRedirect();
+        $this->get('confirm?token_ws=foo')->assertRedirect();
+        $this->get('confirm?TBK_TOKEN=foo')->assertRedirect();
+        $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertRedirect();
+    }
+
+    public function test_validates_request_and_redirects_to_custom_path(): void
+    {
+        WebpayRequest::$validate = function (WebpayRequest $request) {
+            return '/custom/path';
+        };
+
+        $token = Str::random(64);
+
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return 'ok';
+        });
+
+        $this->get("confirm?token_ws=$token")->assertOk();
+        $this->get("confirm?TBK_TOKEN=$token&TBK_ORDEN_COMPRA=bar")->assertOk();
+        $this->get('confirm')->assertRedirect('/custom/path');
+        $this->get('confirm?token_ws=foo')->assertRedirect('/custom/path');
+        $this->get('confirm?TBK_TOKEN=foo')->assertRedirect('/custom/path');
+        $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertRedirect('/custom/path');
     }
 }

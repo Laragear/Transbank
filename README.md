@@ -121,6 +121,31 @@ public function confirm(WebpayRequest $request)
 }
 ```
 
+### Validating Transbank Requests
+
+If a user or bot hits your "return" URL without the transaction token, an exception will be thrown by your application. To avoid this, you may enable validation to redirect the browser to your application home or any other given relative path. You may enable this in your `bootstrap/app.php` or `AppServiceProvider` at boot time.
+
+```php
+use Illuminate\Foundation\Application;
+use Laragear\Transbank\Http\Requests\WebpayRequest;
+
+return Application::configure(basePath: dirname(__DIR__))
+    ->booted(function (): void {
+        WebpayRequest::$validate = '/payment/path';
+    })->create();
+```
+
+Alternatively, you may control the path the user should be redirected to using a callback. Since the callback is resolved by the Service Container, you may type-hint the current Request or any other service you need.
+
+```php
+use Illuminate\Routing\Redirector;
+use Laragear\Transbank\Http\Requests\WebpayRequest;
+
+WebpayRequest::$validate = function (Redirector $redirect) {
+    return $redirect->route('payments.webpay')
+};
+```
+
 ## Environments and credentials
 
 By default, this SDK starts up in **integration** environment, where all transactions made are fake by using Transbank's own _integration_ server, and it comes with integration credentials.
