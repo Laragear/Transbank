@@ -7,7 +7,6 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\Response;
-use Illuminate\Support\Str;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Exceptions\ClientException;
 use Laragear\Transbank\Exceptions\NetworkException;
@@ -129,16 +128,6 @@ class Client
         }
 
         if ($response->clientError()) {
-            // If the error is an HTTP 422, we will check if the error contains the "abort" word.
-            // If that word is found, it will mean the transaction was correct, but was aborted.
-            // In that case, we will do nothing, allowing the transaction to still be processed.
-            if (
-                $response->status() === 422 &&
-                Str::contains($this->getErrorMessage($response), 'Transaction has an invalid finished state: aborted'))
-            {
-                return;
-            }
-
             throw new ClientException($this->getErrorMessage($response), $apiRequest, $response);
         }
     }

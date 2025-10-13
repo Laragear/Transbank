@@ -395,33 +395,6 @@ class ClientTest extends TestCase
         );
     }
 
-    public function test_does_not_throws_client_exception_if_response_client_error_is_transaction_aborted(): void
-    {
-        $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
-
-        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
-            static function (): MockInterface {
-                $pending = Mockery::mock(PendingRequest::class)->makePartial();
-
-                $pending->expects('send')->andReturn(
-                    new Response(
-                        new GuzzleResponse(
-                            422, ['content-type' => 'application/json'], json_encode([
-                                'error_message' => 'Transaction has an invalid finished state: aborted'
-                            ])
-                        )
-                    )
-                );
-
-                return $pending;
-            }
-        );
-
-        $this->app->make(Client::class)->send(
-            'post', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
-        );
-    }
-
     public function test_doesnt_sends_api_data_when_method_is_read(): void
     {
         $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
