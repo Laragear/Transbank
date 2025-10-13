@@ -162,6 +162,8 @@ class WebpayRequestTest extends TestCase
             new Transaction('foo', 'bar', ['response_code' => 1])
         );
 
+        Webpay::shouldReceive('commit')->with('baz')->never();
+
         $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
             return [
                 $request->isSuccessful() ? 'true' : 'false',
@@ -171,18 +173,50 @@ class WebpayRequestTest extends TestCase
 
         $this->get('confirm?token_ws=foo')->assertOk()->assertJson(['true', 'false']);
         $this->get('confirm?token_ws=bar')->assertOk()->assertJson(['false', 'true']);
+        $this->get('confirm?TBK_TOKEN=baz')->assertOk()->assertJson(['false', 'true']);
+        $this->get('confirm')->assertOk()->assertJson(['false', 'true']);
     }
 
-    public function test_checks_if_request_is_valid(): void
+    public function test_checks_if_request_is_error(): void
     {
         $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
             return [
-                $request->isValid() ? 'true' : 'false',
-                $request->isNotValid() ? 'true' : 'false',
+                $request->isError() ? 'true' : 'false',
+                $request->isNotError() ? 'true' : 'false',
             ];
         });
 
-        $this->get('confirm?token_ws=foo')->assertOk()->assertJson(['true', 'false']);
-        $this->get('confirm')->assertOk()->assertJson(['false', 'true']);
+        $this->get('confirm')->assertOk()->assertJson(['true', 'false']);
+        $this->get('confirm?TBK_TOKEN=bar')->assertOk()->assertJson(['true', 'false']);
+
+        $this->get('confirm?token_ws=foo')->assertOk()->assertJson(['false', 'true']);
+    }
+
+    public function test_returns_transaction_buy_order_from_successful_transaction(): void
+    {
+        Webpay::shouldReceive('commit')->once()->with('foo')->andReturn(
+            new Transaction('foo', 'bar', ['response_code' => 0, 'buy_order' => 'bar'])
+        );
+
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return [
+                'buy-order' => $request->buyOrder()
+            ];
+        });
+
+        $this->get('confirm?token_ws=foo')->assertOk()->assertJson(['buy-order' => 'bar']);
+    }
+
+    public function test_returns_transaction_buy_order_from_failed_response(): void
+    {
+        Webpay::shouldReceive('commit')->once()->with('foo')->never();
+
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return [
+                'buy-order' => $request->buyOrder()
+            ];
+        });
+
+        $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertOk()->assertJson(['buy-order' => 'bar']);
     }
 }

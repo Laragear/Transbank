@@ -35,7 +35,7 @@ public function confirm(WebpayRequest $payment)
 
 Your support allows me to keep this package free, up-to-date and maintainable. Alternatively, you can **[spread the word!](http://twitter.com/share?text=I%20am%20using%20this%20cool%20PHP%20package&url=https://github.com%2FLaragear%2FReCaptcha&hashtags=PHP,Laravel,Transbank,WebPay)**
 
-## Requisites:
+## Requisites
 
 * Laravel 11, or later
 
@@ -59,29 +59,65 @@ You can check the documentation of these services in Transbank Developer's site.
 
 Use the service facade you want to make a payment for. 
 
-For example, to make a payment request, use `Webpay::create()`, along with the URL to return to your application once the payment is done.
+For example, to make a payment request, use `Webpay::create()`, along with the URL to return to your application once the payment is done. The order should be a unique string with a 26-character maximum (like an ULID) to identify the transaction.
 
 ```php
+use Illuminate\Support\Str;
 use Laragear\Transbank\Facades\Webpay;
 
-public function pay(Request $request)
+public function pay()
 {
-    return Webpay::create('pink teddy bear', 1990, route('confirm'));
+    $order = Str::ulid();
+
+    return Webpay::create($order, 1990, route('confirm'));
 }
 ```
 
 Once done, you can confirm the payment using the convenient `WebpayRequest` in your controller.
+
+This request object exposes the `isSuccessful()` method to check if the transaction was successful or failed by any reason, and the `buyOrder()` method to retrieve the buy order set by your application. 
 
 ```php
 use Laragear\Transbank\Http\Requests\WebpayRequest;
 
 public function confirm(WebpayRequest $request)
 {
-    $transaction = $request->transaction();
+    if ($request->isSuccessful()) {
+        $order = $request->buyOrder();
     
-    if ($transaction->isSuccessful()) {
-        return 'Your pink teddy bear is on the way!';
+        return "Your payment was successful! Follow your order as #$order.";
     };
+    
+    return 'Your payment failed. Try again!'
+}
+```
+
+### Checking the transaction status
+
+When the WebPay Request is received by your application, the `TBK_TOKEN` query parameter will be sent to your application if the transaction resulted in an error, along the `TBK_ORDEN_COMPRA` query parameter for the `buy_order` you have set for your transaction.
+
+Because Transbank may return an error if the transaction was aborted, failed, or invalid, it's imperative to use `isSuccessful()` before retrieving a failed transaction that may yield an exception by the library.
+
+```php
+use Laragear\Transbank\Http\Requests\WebpayRequest;
+use App\Models\Checkout;
+use App\Events\CheckoutPaid;
+
+public function confirm(WebpayRequest $request)
+{
+    if ($request->isSuccessful()) {
+        // Assume the transaction was successful, consolidate the checkout.
+        CheckoutPaid::dispatch($request->buyOrder(), $request->transaction())
+        
+        // ...
+    };
+    
+    // Assume the transaction failed.
+    Checkout::whereKey($request->buyOrder())->update([
+        'failed_at' => now()
+    ]);
+    
+    // ...
 }
 ```
 

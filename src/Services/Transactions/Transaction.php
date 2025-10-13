@@ -81,20 +81,4 @@ class Transaction extends Fluent
     {
         return (int) substr($this->attributes['card_detail']['card_number'] ?? '', -4);
     }
-
-    /**
-     * Check if the current request has a Transbank token.
-     */
-    public function isValid(): bool
-    {
-        return null !== $this->token();
-    }
-
-    /**
-     * Check if the current request doesn't have a Transbank token.
-     */
-    public function isNotValid(): bool
-    {
-        return !$this->isValid();
-    }
 }

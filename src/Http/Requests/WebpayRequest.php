@@ -19,7 +19,7 @@ class WebpayRequest extends FormRequest
      */
     public function validateResolved(): void
     {
-        // Don't validate this as there is nothing to validate.
+
     }
 
     /**
@@ -79,7 +79,7 @@ class WebpayRequest extends FormRequest
      */
     public function isSuccessful(): bool
     {
-        return $this->transaction()->isSuccessful();
+        return $this->isNotError() && $this->transaction()->isSuccessful();
     }
 
     /**
@@ -96,5 +96,32 @@ class WebpayRequest extends FormRequest
     protected function token(): string
     {
         return $this->query('token_ws') ?? $this->input('TBK_TOKEN');
+    }
+
+    /**
+     * Check if the request is an error response.
+     */
+    public function isError(): bool
+    {
+        // If the request has the `TBK_TOKEN` then the transaction is an error. It's left
+        // to the developer if he wants to retrieve the transaction (but shouldn't). If
+        // the request doesn't have the `token_ws`, then the user aborted beforehand.
+        return $this->has('TBK_TOKEN') || ! $this->has('token_ws');
+    }
+
+    /**
+     * Check if the request is not an error response.
+     */
+    public function isNotError(): bool
+    {
+        return ! $this->isError();
+    }
+
+    /**
+     * Returns the Buy Order for this transaction.
+     */
+    public function buyOrder(): string
+    {
+        return $this->get('TBK_ORDEN_COMPRA') ?? $this->transaction()->get('buy_order', '');
     }
 }
