@@ -3,6 +3,8 @@
 namespace Laragear\Transbank\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laragear\Transbank\Services\Transactions\Transaction;
 use Laragear\Transbank\Services\Webpay;
 use function is_callable;
@@ -19,7 +21,7 @@ class WebpayRequest extends FormRequest
      */
     public function validateResolved(): void
     {
-
+        // Do not validate.
     }
 
     /**
@@ -95,7 +97,7 @@ class WebpayRequest extends FormRequest
      */
     protected function token(): string
     {
-        return $this->query('token_ws') ?? $this->input('TBK_TOKEN');
+        return $this->input('token_ws') ?? $this->input('TBK_TOKEN');
     }
 
     /**
@@ -122,6 +124,6 @@ class WebpayRequest extends FormRequest
      */
     public function buyOrder(): string
     {
-        return $this->get('TBK_ORDEN_COMPRA') ?? $this->transaction()->get('buy_order', '');
+        return $this->input('TBK_ORDEN_COMPRA') ?? $this->transaction()->get('buy_order', '');
     }
 }
