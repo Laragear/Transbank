@@ -21,17 +21,7 @@ class WebpayRequest extends FormRequest
      */
     public function validateResolved(): void
     {
-        if ($this->missing('TBK_TOKEN', 'TBK_ORDEN_COMPRA') || $this->missing('token_ws')) {
-            throw ValidationException::withMessages([
-                'webpay' => 'The Transbank Request has missing params.'
-            ]);
-        }
-
-        if (Str::length($this->token()) !== 64) {
-            throw ValidationException::withMessages([
-                'webpay' => 'The Transbank Request token does not have 64 characters.'
-            ]);
-        }
+        // Do not validate.
     }
 
     /**
