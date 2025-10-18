@@ -28,9 +28,11 @@
     "require": {
         "php": "^8.2",
         "ext-json": "*",
+        "illuminate/config": "11.*|12.*",
         "illuminate/http": "11.*|12.*",
         "illuminate/log": "11.*|12.*",
         "illuminate/events": "11.*|12.*",
+        "illuminate/support": "11.*|12.*",
         "guzzlehttp/guzzle": "^7.9|8.*"
     },
     "require-dev": {
@@ -47,7 +49,7 @@
         }
     },
     "scripts": {
-        "test": "vendor/bin/phpunit --coverage-clover build/logs/clover.xml",
+        "test": "vendor/bin/phpunit",
         "test-coverage": "vendor/bin/phpunit --coverage-html coverage"
     },
     "config": {
