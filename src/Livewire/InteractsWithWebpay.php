@@ -2,13 +2,12 @@
 
 namespace Laragear\Transbank\Livewire;
 
-use Laragear\Transbank\Facades\Webpay;
 use Laragear\Transbank\Services\Transactions\Transaction;
+use Laragear\Transbank\Services\Webpay;
 use Livewire\Attributes\Url;
-use Livewire\Component;
 use Throwable;
 
-abstract class CheckoutWebpay extends Component
+trait InteractsWithWebpay
 {
     /**
      * The Webpay Token for completed transactions.
@@ -33,13 +32,16 @@ abstract class CheckoutWebpay extends Component
      */
     public ?bool $isSuccessful = null;
 
-    public function mount(): void
+    /**
+     * Handles the incoming Webpay request.
+     */
+    public function mountInteractsWithWebpay(Webpay $webpay): void
     {
         if ($this->isWebpayReturn()) {
             $this->beforeHandledTransaction();
 
             try {
-                $transaction = $this->handleWebpayTransaction();
+                $transaction = $this->handleWebpayTransaction($webpay);
             } catch (Throwable $exception) {
                 $result = $this->handleWebpayException($exception);
 
@@ -77,9 +79,9 @@ abstract class CheckoutWebpay extends Component
     /**
      * Retrieve the Webpay Transaction.
      */
-    protected function handleWebpayTransaction(): Transaction
+    protected function handleWebpayTransaction(Webpay $webpay): Transaction
     {
-        return Webpay::commit($this->token_ws ?: $this->TBK_TOKEN);
+        return $webpay->commit($this->token_ws ?: $this->TBK_TOKEN);
     }
 
     /**

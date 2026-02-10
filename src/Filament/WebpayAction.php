@@ -4,6 +4,7 @@ namespace Laragear\Transbank\Filament;
 
 use Closure;
 use Filament\Actions\Action;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Http\RedirectResponse;
 use Laragear\Transbank\Facades\Webpay;
 use Livewire\Features\SupportRedirects\Redirector;
@@ -23,6 +24,15 @@ class WebpayAction extends Action
     protected ?Closure $afterResponse = null;
 
     protected ?Closure $rescue = null;
+
+    protected string | Htmlable | Closure | null $label = 'Pay with Webpay';
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->action($this->pay(...));
+    }
 
     public function beforeResponse(Closure $callback): static
     {
@@ -64,13 +74,6 @@ class WebpayAction extends Action
         $this->rescue = $callback;
 
         return $this;
-    }
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->label('Pay with Webpay')->action($this->pay(...));
     }
 
     /**

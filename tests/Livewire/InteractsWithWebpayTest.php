@@ -5,8 +5,9 @@ namespace Tests\Livewire;
 use Exception;
 use Illuminate\View\ViewException;
 use Laragear\Transbank\Facades\Webpay;
-use Laragear\Transbank\Livewire\CheckoutWebpay;
+use Laragear\Transbank\Livewire\InteractsWithWebpay;
 use Laragear\Transbank\Services\Transactions\Transaction;
+use Livewire\Component;
 use Livewire\Livewire;
 use Livewire\LivewireServiceProvider;
 use Mockery;
@@ -14,7 +15,7 @@ use Tests\TestCase;
 use Throwable;
 use function array_merge;
 
-class CheckoutWebpayTest extends TestCase
+class InteractsWithWebpayTest extends TestCase
 {
     protected function getPackageProviders($app): array
     {
@@ -25,7 +26,7 @@ class CheckoutWebpayTest extends TestCase
 
     public function test_ignores_normal_requests(): void
     {
-        Livewire::test(DummyCheckoutWebPay::class)
+        Livewire::test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', false)
             ->assertSet('exception', false)
             ->assertSet('successful', null)
@@ -41,7 +42,7 @@ class CheckoutWebpayTest extends TestCase
         $livewire = Livewire::withQueryParams(['token_ws' => 'invalid_token']);
 
         try {
-            $livewire->test(DummyCheckoutWebpay::class)->assertSet('exception', true);
+            $livewire->test(DummyInteractsWithWebPay::class)->assertSet('exception', true);
         } catch (ViewException $exception) {
             static::assertStringStartsWith('test exception', $exception->getMessage());
         }
@@ -55,7 +56,7 @@ class CheckoutWebpayTest extends TestCase
         Webpay::expects('commit')->with('valid_token')->andReturn($transaction);
 
         Livewire::withQueryParams(['token_ws' => 'valid_token'])
-            ->test(DummyCheckoutWebpay::class)
+            ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
             ->assertSet('successful', true)
             ->assertSet('afterHandle', true)
@@ -70,7 +71,7 @@ class CheckoutWebpayTest extends TestCase
         Webpay::expects('commit')->with('valid_token')->andReturn($transaction);
 
         Livewire::withQueryParams(['token_ws' => 'valid_token'])
-            ->test(DummyCheckoutWebpay::class)
+            ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
             ->assertSet('successful', false)
             ->assertSet('afterHandle', true)
@@ -85,7 +86,7 @@ class CheckoutWebpayTest extends TestCase
         Webpay::expects('commit')->with('aborted_token')->andReturn($transaction);
 
         Livewire::withQueryParams(['TBK_TOKEN' => 'aborted_token'])
-            ->test(DummyCheckoutWebpay::class)
+            ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
             ->assertSet('successful', false)
             ->assertSet('afterHandle', true)
@@ -93,8 +94,10 @@ class CheckoutWebpayTest extends TestCase
     }
 }
 
-class DummyCheckoutWebPay extends CheckoutWebpay
+class DummyInteractsWithWebPay extends Component
 {
+    use InteractsWithWebpay;
+
     public ?bool $successful = null;
     public bool $beforeHandle = false;
     public bool $exception = false;

@@ -231,18 +231,21 @@ You will be able to hear all transactions started and completed. This package se
 
 ## Livewire Component
 
-This packages includes the [`Laragear/Transbank/Livewire/CheckoutWebpay`](src/Livewire/CheckoutWebpay.php) Liveware component that automatically handles receiving a Webpay Transaction from Transbank. You can extend create a component in your application by extending this abstract class to easily handle the Transaction result.
+This packages includes the [`Laragear/Transbank/Livewire/CheckoutWebpay`](src/Livewire/CheckoutWebpay.php) Liveware trait that automatically handles receiving a Webpay Transaction from Transbank [thanks to lifecycle hooks](https://livewire.laravel.com/docs/4.x/lifecycle-hooks#using-hooks-inside-a-trait).
 
-The only requirement is to implement the `handleSuccessfulTransaction()` method, which receives the successful transaction. 
+The only requirement is to implement the `handleSuccessfulTransaction()` method, which receives the successful transaction. For example, you may use this to mark a hypothetical "Cart" model as paid. 
 
 ```php
 use App\Models\Checkout;
 use Illuminate\Contracts\View\View;
-use Laragear\Transbank\Livewire\CheckoutWebpay;
+use Laragear\Transbank\Livewire\InteractsWithWebpay;
 use Laragear\Transbank\Services\Transactions\Transaction;
+use Livewire\Component;
 
-class Payment extends CheckoutWebpay
+class Payment extends Component
 {
+    use InteractsWithWebpay;
+    
     protected function handleSuccessfulTransaction(Transaction $transaction) : void
     {
         $checkout = Checkout::find($transaction->session_id);
@@ -252,7 +255,7 @@ class Payment extends CheckoutWebpay
     
     public function render(): View 
     {
-        return view('cart.payment');
+        return view('cart.payment.status');
     }
 } 
 ```
@@ -268,14 +271,14 @@ You can use these methods to show different messages to the user. For example, y
 
 ### Filament PHP Action
 
-If you use Filament, you can use the [`Laragear\Transbank\Filament\WebpayAction`](src/Filament/WebpayAction.php) [Filament Action](https://filamentphp.com/docs/5.x/actions/overview) to show a button that automatically creates a payment and redirects the user to Transbank for the payment flow.
+If you use Filament PHP, you can use the [`Laragear\Transbank\Filament\WebpayAction`](src/Filament/WebpayAction.php) [Filament Action](https://filamentphp.com/docs/5.x/actions/overview) to show a button that automatically creates a payment and redirects the user to Transbank for the payment flow.
 
-You should use this [adding custom actions](https://filamentphp.com/docs/5.x/resources/editing-records#custom-actions), or anywhere you want. Simple use the `data()` or the methods `buyOrder()`, `amount()` and `returnUrl()` to set the minumum data to create a Transaction in Webpay servers.
+You should use this [adding custom actions](https://filamentphp.com/docs/5.x/resources/editing-records#custom-actions), or anywhere you want. Simple use the `data()` or the methods `buyOrder()`, `amount()` and `returnUrl()` to set the minimum data to create a Transaction in Webpay servers.
 
 ```php
 use App\Models\Checkout;
 use Filament\Schemas\Schema;
-use Laragear\Transbank\Filament\WebpayAction;
+use Illuminate\Support\Number;use Laragear\Transbank\Filament\WebpayAction;
 
 public ?Checkout $checkout = null;
 
@@ -289,6 +292,7 @@ protected function getFormActions(): array
     return [
         ...parent::getFormActions(),
         WebpayAction::make('pay')
+            ->label("Pay " . Number::currency($this->checkout->amount))
             ->data([
                 'buyOrder' => $this->checkout->asUlid(),            
                 'amount' => $this->checkout->total(),            
