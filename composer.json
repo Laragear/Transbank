@@ -36,7 +36,9 @@
         "guzzlehttp/guzzle": "^7.9|8.*"
     },
     "require-dev": {
-        "orchestra/testbench": "9.*|10.*"
+        "orchestra/testbench": "^9.16|10.*",
+        "livewire/livewire": "3.*|4.*",
+        "filament/actions": "4.*|5.*"
     },
     "autoload": {
         "psr-4": {
