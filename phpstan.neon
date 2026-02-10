@@ -1,0 +1,3 @@
+parameters:
+    ignoreErrors:
+        - '#Trait Laragear\\Transbank\\Livewire\\InteractsWithWebpay is used zero times and is not analysed\.#'

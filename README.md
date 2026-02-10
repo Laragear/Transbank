@@ -229,6 +229,81 @@ You will be able to hear all transactions started and completed. This package se
 * `TransactionCreated` after a transaction is created in Transbank, but pending payment.
 * `TransactionCompleted` after a transaction or refund is completed in Transbank, regardless of the success.
 
+## Livewire Component
+
+This packages includes the [`Laragear/Transbank/Livewire/CheckoutWebpay`](src/Livewire/CheckoutWebpay.php) Liveware trait that automatically handles receiving a Webpay Transaction from Transbank [thanks to lifecycle hooks](https://livewire.laravel.com/docs/4.x/lifecycle-hooks#using-hooks-inside-a-trait).
+
+The only requirement is to implement the `handleSuccessfulTransaction()` method, which receives the successful transaction. For example, you may use this to mark a hypothetical "Cart" model as paid. 
+
+```php
+use App\Models\Checkout;
+use Illuminate\Contracts\View\View;
+use Laragear\Transbank\Livewire\InteractsWithWebpay;
+use Laragear\Transbank\Services\Transactions\Transaction;
+use Livewire\Component;
+
+class Payment extends Component
+{
+    use InteractsWithWebpay;
+    
+    protected function handleSuccessfulTransaction(Transaction $transaction) : void
+    {
+        $checkout = Checkout::find($transaction->session_id);
+        
+        $checkout->markAsPaid();
+    }
+    
+    public function render(): View 
+    {
+        return view('cart.payment.status');
+    }
+} 
+```
+
+Apart from the `$isSuccessful` property to check the transaction success, this abstract component also offers other methods you can override for your convenience:
+
+- `handleWebpayException()`: Receives any exception thrown by Webpay (like connection errors).
+- `handleFailedTransaction()`: Handles the Transaction when it has failed.
+- `afterHandledTransaction()`: Handles the Transaction after failure or success.
+- `handleNonWebpayResponse()`: Handles the component if no transaction was retrieved from Webpay.
+
+You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics. 
+
+### Filament PHP Action
+
+If you use Filament PHP, you can use the [`Laragear\Transbank\Filament\WebpayAction`](src/Filament/WebpayAction.php) [Filament Action](https://filamentphp.com/docs/5.x/actions/overview) to show a button that automatically creates a payment and redirects the user to Transbank for the payment flow.
+
+You should use this [adding custom actions](https://filamentphp.com/docs/5.x/resources/editing-records#custom-actions), or anywhere you want. Simple use the `data()` or the methods `buyOrder()`, `amount()` and `returnUrl()` to set the minimum data to create a Transaction in Webpay servers.
+
+```php
+use App\Models\Checkout;
+use Filament\Schemas\Schema;
+use Illuminate\Support\Number;use Laragear\Transbank\Filament\WebpayAction;
+
+public ?Checkout $checkout = null;
+
+public function mount()
+{
+    $this->chekout = Checkout::find(session('current_checkout_id'));
+}
+
+protected function getFormActions(): array
+{
+    return [
+        ...parent::getFormActions(),
+        WebpayAction::make('pay')
+            ->label("Pay " . Number::currency($this->checkout->amount))
+            ->data([
+                'buyOrder' => $this->checkout->asUlid(),            
+                'amount' => $this->checkout->total(),            
+                'returnUrl' => action('App\Filament\Checkout\Pages\Checkout'),            
+            ])
+    ];
+}
+```
+
+When clicking the `Pay with Webpay` button, a redirection will be returned so the user immediately start the payment flow.
+
 ## Exceptions
 
 All exceptions implement `TransbankException`, so you can easily catch and check what happened.
