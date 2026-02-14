@@ -59,6 +59,7 @@ class InteractsWithWebpayTest extends TestCase
             ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
             ->assertSet('successful', true)
+            ->assertSet('status', true)
             ->assertSet('afterHandle', true)
             ->assertSet('nonWebpayResponse', false);
     }
@@ -74,6 +75,7 @@ class InteractsWithWebpayTest extends TestCase
             ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
             ->assertSet('successful', false)
+            ->assertSet('status', true)
             ->assertSet('afterHandle', true)
             ->assertSet('nonWebpayResponse', false);
     }
@@ -89,6 +91,7 @@ class InteractsWithWebpayTest extends TestCase
             ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
             ->assertSet('successful', false)
+            ->assertSet('status', true)
             ->assertSet('afterHandle', true)
             ->assertSet('nonWebpayResponse', false);
     }
@@ -101,12 +104,20 @@ class DummyInteractsWithWebPay extends Component
     public ?bool $successful = null;
     public bool $beforeHandle = false;
     public bool $exception = false;
+    public bool $status = false;
     public bool $afterHandle = false;
     public bool $nonWebpayResponse = false;
 
     protected function beforeHandledTransaction(): void
     {
         $this->beforeHandle = true;
+    }
+
+    protected function handleTransactionStatus(Transaction $transaction): bool
+    {
+        $this->status = true;
+
+        return $transaction->isSuccessful();
     }
 
     protected function handleSuccessfulTransaction(Transaction $transaction): void

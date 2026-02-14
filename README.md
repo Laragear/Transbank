@@ -260,14 +260,27 @@ class Payment extends Component
 } 
 ```
 
-Apart from the `$isSuccessful` property to check the transaction success, this abstract component also offers other methods you can override for your convenience:
+Apart from the `$isSuccessful` property to check the transaction success, this trait also offers other methods you can override for your convenience:
 
 - `handleWebpayException()`: Receives any exception thrown by Webpay (like connection errors).
+- `handleTransactionStatus()`: Handles how the transaction should be considered successful or failed.
 - `handleFailedTransaction()`: Handles the Transaction when it has failed.
 - `afterHandledTransaction()`: Handles the Transaction after failure or success.
 - `handleNonWebpayResponse()`: Handles the component if no transaction was retrieved from Webpay.
 
-You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics. 
+You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics.
+
+Additionally, you can override `handleTransactionStatus()` method for additional transaction checks, as its result will be stored in the `$isSuccessful` property. For example, you may deem the transaction failed if the payment was made with more than one installment.
+
+```php
+use Laragear\Transbank\Services\Transactions\Transaction;
+
+public function handleTransactionStatus(Transaction $transaction): bool
+{
+    return $transaction->isSuccessful() 
+        && $transaction->get('installments_number') > 0;
+}
+```
 
 ### Filament PHP Action
 

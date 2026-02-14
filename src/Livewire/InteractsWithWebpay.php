@@ -48,7 +48,7 @@ trait InteractsWithWebpay
                 throw ($result instanceof Throwable ? $result : $exception);
             }
 
-            if ($this->isSuccessful = $transaction->isSuccessful()) {
+            if ($this->isSuccessful = $this->handleTransactionStatus($transaction)) {
                 $this->handleSuccessfulTransaction($transaction);
             } else {
                 $this->handleFailedTransaction($transaction);
@@ -82,6 +82,14 @@ trait InteractsWithWebpay
     protected function handleWebpayTransaction(Webpay $webpay): Transaction
     {
         return $webpay->commit($this->token_ws ?: $this->TBK_TOKEN);
+    }
+
+    /**
+     * Determine if the transaction is successful or not.
+     */
+    protected function handleTransactionStatus(Transaction $transaction): bool
+    {
+        return $transaction->isSuccessful();
     }
 
     /**
