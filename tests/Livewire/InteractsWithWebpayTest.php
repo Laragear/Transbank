@@ -28,6 +28,8 @@ class InteractsWithWebpayTest extends TestCase
     {
         Livewire::test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', false)
+            ->assertSet('afterReceived', false)
+            ->assertSet('status', false)
             ->assertSet('exception', false)
             ->assertSet('successful', null)
             ->assertSet('transaction', null)
@@ -58,6 +60,7 @@ class InteractsWithWebpayTest extends TestCase
         Livewire::withQueryParams(['token_ws' => 'valid_token'])
             ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
+            ->assertSet('afterReceived', true)
             ->assertSet('successful', true)
             ->assertSet('status', true)
             ->assertSet('afterHandle', true)
@@ -74,6 +77,7 @@ class InteractsWithWebpayTest extends TestCase
         Livewire::withQueryParams(['token_ws' => 'valid_token'])
             ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
+            ->assertSet('afterReceived', true)
             ->assertSet('successful', false)
             ->assertSet('status', true)
             ->assertSet('afterHandle', true)
@@ -90,6 +94,7 @@ class InteractsWithWebpayTest extends TestCase
         Livewire::withQueryParams(['TBK_TOKEN' => 'aborted_token'])
             ->test(DummyInteractsWithWebPay::class)
             ->assertSet('beforeHandle', true)
+            ->assertSet('afterReceived', true)
             ->assertSet('successful', false)
             ->assertSet('status', true)
             ->assertSet('afterHandle', true)
@@ -104,6 +109,7 @@ class DummyInteractsWithWebPay extends Component
     public ?bool $successful = null;
     public bool $beforeHandle = false;
     public bool $exception = false;
+    public bool $afterReceived = false;
     public bool $status = false;
     public bool $afterHandle = false;
     public bool $nonWebpayResponse = false;
@@ -111,6 +117,11 @@ class DummyInteractsWithWebPay extends Component
     protected function beforeHandledTransaction(): void
     {
         $this->beforeHandle = true;
+    }
+
+    protected function afterTransactionReceived(Transaction $transaction): void
+    {
+        $this->afterReceived = true;
     }
 
     protected function handleTransactionStatus(Transaction $transaction): bool

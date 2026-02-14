@@ -48,6 +48,8 @@ trait InteractsWithWebpay
                 throw ($result instanceof Throwable ? $result : $exception);
             }
 
+            $this->afterTransactionReceived($transaction);
+
             if ($this->isSuccessful = $this->handleTransactionStatus($transaction)) {
                 $this->handleSuccessfulTransaction($transaction);
             } else {
@@ -82,6 +84,14 @@ trait InteractsWithWebpay
     protected function handleWebpayTransaction(Webpay $webpay): Transaction
     {
         return $webpay->commit($this->token_ws ?: $this->TBK_TOKEN);
+    }
+
+    /**
+     * Handle the transaction after being received.
+     */
+    protected function afterTransactionReceived(Transaction $transaction): void
+    {
+        // ...
     }
 
     /**

@@ -263,6 +263,7 @@ class Payment extends Component
 Apart from the `$isSuccessful` property to check the transaction success, this trait also offers other methods you can override for your convenience:
 
 - `handleWebpayException()`: Receives any exception thrown by Webpay (like connection errors).
+- `afterTransactionReceived()`: Handles the freshly retrieved transaction.
 - `handleTransactionStatus()`: Handles how the transaction should be considered successful or failed.
 - `handleFailedTransaction()`: Handles the Transaction when it has failed.
 - `afterHandledTransaction()`: Handles the Transaction after failure or success.
@@ -270,15 +271,45 @@ Apart from the `$isSuccessful` property to check the transaction success, this t
 
 You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics.
 
-Additionally, you can override `handleTransactionStatus()` method for additional transaction checks, as its result will be stored in the `$isSuccessful` property. For example, you may deem the transaction failed if the payment was made with more than one installment.
+The `afterTransactionReceived()` method is great to override when you require to do logic _after_ the transaction has been received, but _before_ any other logic. For example, to retrieve a Checkout process.
 
 ```php
+use App\Models\Checkout;
 use Laragear\Transbank\Services\Transactions\Transaction;
+
+public ?Checkout $checkout = null;
+
+protected function afterTransactionReceived(Transaction $transaction): void
+{
+    if ($order = $transaction->get('buy_order')) {
+        $this->checkout = Checkout::find($order)    
+    }
+}
+```
+
+Additionally, you can override `handleTransactionStatus()` method for additional transaction checks, as its result will be stored in the `$isSuccessful` property. For example, you may deem the transaction failed if the payment does not match the Checkout amount.
+
+```php
+use Filament\Notifications\Notification;
+use Laragear\Transbank\Services\Transactions\Transaction;
+
+public ?Checkout $checkout = null;
 
 public function handleTransactionStatus(Transaction $transaction): bool
 {
-    return $transaction->isSuccessful() 
-        && $transaction->get('installments_number') > 0;
+    return $transaction->isSuccessful()
+        && $transaction->get('amount') === $this->chekout?->amount
+}
+
+protected function handleSuccessfulTransaction(Transaction $transaction) : void
+{
+    // Since the transaction was successful, the checkout exists.
+    $this->checkout->markAsPaid();
+    
+    Notification::make('paid')
+        ->title('Payment successful!')
+        ->body('We will prepare your purchase as soon as possible.')
+        ->send();
 }
 ```
 
