@@ -45,7 +45,14 @@ trait InteractsWithWebpay
             } catch (Throwable $exception) {
                 $result = $this->handleWebpayException($exception);
 
-                throw ($result instanceof Throwable ? $result : $exception);
+                // If the handler returns an exception, we will throw it as normal procedure.
+                // Otherwise, we will just stop the transaction handling entirely since the
+                // Transbank Transaction object doesn't exist and there is nothing to do.
+                if ($result instanceof Throwable) {
+                    throw $result;
+                } else {
+                    return;
+                }
             }
 
             $this->afterTransactionReceived($transaction);
@@ -104,8 +111,10 @@ trait InteractsWithWebpay
 
     /**
      * Handle the exception given by Webpay.
+     *
+     * @return \Throwable|mixed|null|void
      */
-    protected function handleWebpayException(Throwable $exception): mixed
+    protected function handleWebpayException(Throwable $exception)
     {
         return $exception;
     }

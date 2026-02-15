@@ -262,7 +262,7 @@ class Payment extends Component
 
 Apart from the `$isSuccessful` property to check the transaction success, this trait also offers other methods you can override for your convenience:
 
-- `handleWebpayException()`: Receives any exception thrown by Webpay (like connection errors).
+- `handleWebpayException()`: Controls exceptions thrown by Webpay (like connection errors).
 - `afterTransactionReceived()`: Handles the freshly retrieved transaction.
 - `handleTransactionStatus()`: Handles how the transaction should be considered successful or failed.
 - `handleFailedTransaction()`: Handles the Transaction when it has failed.
@@ -270,6 +270,28 @@ Apart from the `$isSuccessful` property to check the transaction success, this t
 - `handleNonWebpayResponse()`: Handles the component if no transaction was retrieved from Webpay.
 
 You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics.
+
+The `handleWebpayException()` receives any exception, like connection errors or form aborts, and lets you handle it as you wish. For example, you may suppress the exception and render your component as not-successful. Otherwise, any Exception returned will be thrown as usual, so it's great to _replace_ exceptions with your own.
+
+```php
+use Laragear\Transbank\Exceptions\ClientException;
+use Throwable;
+
+public $title = '';
+public $message = '';
+
+protected function handleWebpayException(Throwable $exception)
+{
+    if ($exception instanceof ClientException) {
+        $this->isSuccessful = false;
+    } else {
+        report($exception);
+        
+        $this->title = 'Transbank is unresponsive';
+        $this->message = 'We will look into it as soon as possible.';
+    }
+}
+```
 
 The `afterTransactionReceived()` method is great to override when you require to do logic _after_ the transaction has been received, but _before_ any other logic. For example, to retrieve a Checkout process.
 
@@ -322,7 +344,8 @@ You should use this [adding custom actions](https://filamentphp.com/docs/5.x/res
 ```php
 use App\Models\Checkout;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Number;use Laragear\Transbank\Filament\WebpayAction;
+use Illuminate\Support\Number;
+use Laragear\Transbank\Filament\WebpayAction;
 
 public ?Checkout $checkout = null;
 
