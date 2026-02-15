@@ -6,6 +6,7 @@ use Illuminate\Contracts\Config\Repository as ConfigContract;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Exceptions\ClientException;
@@ -93,6 +94,9 @@ class Client
 
         try {
             return $request->send($method, $this->setApiVersion($endpoint), $data);
+        } catch (RequestException $exception) {
+            // The response parser will be in charge to make the proper exception for the response.
+            return $exception->response;
         } catch (ConnectionException $exception) {
             throw new NetworkException('Could not establish connection with Transbank.', $api, null, $exception);
         } catch (Throwable $exception) {

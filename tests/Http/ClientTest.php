@@ -7,6 +7,7 @@ use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Exceptions\ClientException;
@@ -382,6 +383,38 @@ class ClientTest extends TestCase
                     new Response(
                         new GuzzleResponse(
                             400, ['content-type' => 'application/json'], json_encode(['error_message' => 'test_error'])
+                        )
+                    )
+                );
+
+                return $pending;
+            }
+        );
+
+        $this->app->make(Client::class)->send(
+            'post', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
+        );
+    }
+
+    public function test_throws_client_exception_if_response_request_error(): void
+    {
+        $this->expectException(ClientException::class);
+        $this->expectExceptionMessage('test_error');
+
+        $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
+
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
+            static function (): MockInterface {
+                $pending = Mockery::mock(PendingRequest::class)->makePartial();
+
+                $pending->expects('send')->andThrow(
+                    new RequestException(
+                        new Response(
+                            new GuzzleResponse(
+                                400,
+                                ['content-type' => 'application/json'],
+                                json_encode(['error_message' => 'test_error'])
+                            )
                         )
                     )
                 );

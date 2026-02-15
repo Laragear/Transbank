@@ -39,15 +39,23 @@ class InteractsWithWebpayTest extends TestCase
 
     public function test_handles_webpay_exception(): void
     {
+        $this->expectException(ViewException::class);
+        $this->expectExceptionMessageMatches('/test exception/');
+
         Webpay::expects('commit')->with('invalid_token')->andThrow(new Exception('test exception'));
 
         $livewire = Livewire::withQueryParams(['token_ws' => 'invalid_token']);
 
-        try {
-            $livewire->test(DummyInteractsWithWebPay::class)->assertSet('exception', true);
-        } catch (ViewException $exception) {
-            static::assertStringStartsWith('test exception', $exception->getMessage());
-        }
+        $livewire->test(DummyInteractsWithWebPay::class);
+    }
+
+    public function test_handles_webpay_exception_without_throwing(): void
+    {
+        Webpay::expects('commit')->with('invalid_token')->andThrow(new Exception('test exception'));
+
+        $livewire = Livewire::withQueryParams(['token_ws' => 'invalid_token']);
+
+        $livewire->test(DummyInteractsWithWebpayWithoutThrowingException::class)->assertSet('exception', true);
     }
 
     public function test_commits_successful_transaction(): void
@@ -141,7 +149,7 @@ class DummyInteractsWithWebPay extends Component
         $this->successful = false;
     }
 
-    protected function handleWebpayException(Throwable $exception): mixed
+    protected function handleWebpayException(Throwable $exception)
     {
         $this->exception = true;
 
@@ -161,5 +169,13 @@ class DummyInteractsWithWebPay extends Component
     public function render()
     {
         return '<div>Checkout</div>';
+    }
+}
+
+class DummyInteractsWithWebpayWithoutThrowingException extends DummyInteractsWithWebPay
+{
+    protected function handleWebpayException(Throwable $exception)
+    {
+        $this->exception = true;
     }
 }
