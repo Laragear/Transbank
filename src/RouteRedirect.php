@@ -14,7 +14,7 @@ class RouteRedirect
     /**
      * Middleware class that verifies CSRF tokens.
      */
-    public static $csrfMiddleware = VerifyCsrfToken::class;
+    public static string $csrfMiddleware = VerifyCsrfToken::class;
 
     /**
      * Returns a redirection route for failed transactions

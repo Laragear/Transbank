@@ -12,7 +12,7 @@ class Response implements Stringable, Responsable
     /**
      * The name of the key holding the token.
      */
-    public const WEBPAY_TOKEN = 'token_ws';
+    public const string WEBPAY_TOKEN = 'token_ws';
 
     /**
      * Response constructor.

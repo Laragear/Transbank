@@ -4,13 +4,9 @@ namespace Laragear\Transbank\Http\Requests;
 
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Str;
-use Illuminate\Validation\ValidationException;
 use Laragear\Transbank\Services\Transactions\Transaction;
 use Laragear\Transbank\Services\Webpay;
-use function is_bool;
 use function is_callable;
-use function value;
 
 class WebpayRequest extends FormRequest
 {

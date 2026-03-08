@@ -15,23 +15,23 @@ class Webpay
     /**
      * Integrations Keys for this service.
      */
-    public const INTEGRATION_KEY = 597055555532;
+    public const int INTEGRATION_KEY = 597055555532;
 
     // Service names.
-    public const SERVICE_NAME = 'webpay';
+    public const string SERVICE_NAME = 'webpay';
 
     // Action names
-    public const ACTION_CREATE = 'create';
-    public const ACTION_COMMIT = 'commit';
-    public const ACTION_STATUS = 'status';
-    public const ACTION_REFUND = 'refund';
-    public const ACTION_CAPTURE = 'capture';
+    public const string ACTION_CREATE = 'create';
+    public const string ACTION_COMMIT = 'commit';
+    public const string ACTION_STATUS = 'status';
+    public const string ACTION_REFUND = 'refund';
+    public const string ACTION_CAPTURE = 'capture';
 
     // The API base URI.
-    public const ENDPOINT_BASE = 'rswebpaytransaction/api/webpay/{api_version}/';
+    public const string ENDPOINT_BASE = 'rswebpaytransaction/api/webpay/{api_version}/';
 
     // Endpoints for the transactions.
-    public const ENDPOINTS = [
+    public const array ENDPOINTS = [
         self::ACTION_CREATE =>  ['post', self::ENDPOINT_BASE . 'transactions'],
         self::ACTION_COMMIT =>  ['put', self::ENDPOINT_BASE . 'transactions/{token}'],
         self::ACTION_STATUS =>  ['get', self::ENDPOINT_BASE . 'transactions/{token}'],
@@ -109,7 +109,6 @@ class Webpay
 
     /**
      * Refunds partially or totally a given credit-card charge amount.
-     *
      */
     public function refund(string $token, int|float $amount): Transactions\Transaction
     {
@@ -132,7 +131,6 @@ class Webpay
      * Creates a Capture ApiRequest on Transbank servers, returns a response.
      *
      * This transaction type only works for credit cards, and "holds" the amount up to 7 days.
-     *
      */
     public function capture(string $token, string $buyOrder, int $code, int|float $amount): Transactions\Transaction
     {

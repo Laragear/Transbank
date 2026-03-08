@@ -21,27 +21,27 @@ class Client
     /**
      * Current API Version to use on Transbank Servers.
      */
-    public const API_VERSION = 'v1.3';
+    public const string API_VERSION = 'v1.3';
 
     /**
      * Transbank API Key header name.
      */
-    public const HEADER_KEY = 'Tbk-Api-Key-Id';
+    public const string HEADER_KEY = 'Tbk-Api-Key-Id';
 
     /**
      * Transbank API Shared Secret header name.
      */
-    public const HEADER_SECRET = 'Tbk-Api-Key-Secret';
+    public const string HEADER_SECRET = 'Tbk-Api-Key-Secret';
 
     /**
      * Production endpoint server.
      */
-    public const PRODUCTION_ENDPOINT = 'https://webpay3g.transbank.cl/';
+    public const string PRODUCTION_ENDPOINT = 'https://webpay3g.transbank.cl/';
 
     /**
      * Integration endpoint server.
      */
-    public const INTEGRATION_ENDPOINT = 'https://webpay3gint.transbank.cl/';
+    public const string INTEGRATION_ENDPOINT = 'https://webpay3gint.transbank.cl/';
 
     /**
      * Create a new HTTP Client instance.
@@ -56,6 +56,7 @@ class Client
      */
     public function send(string $method, string $endpoint, ApiRequest $request): Response
     {
+        /** @var \Illuminate\Http\Client\PendingRequest $pendingRequest */
         $pendingRequest = $this->http
             ->withoutRedirecting()
             ->retry($this->config->get('transbank.http.retries'))

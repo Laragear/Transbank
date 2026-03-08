@@ -10,12 +10,12 @@ class Transaction extends Fluent
 {
     use DynamicallyAccess;
 
-    public const STATUS_AUTHORIZED = 'AUTHORIZED';
-    public const STATUS_NULLIFIED = 'NULLIFIED';
-    public const STATUS_REVERSED = 'REVERSED';
-    public const STATUS_PARTIALLY_NULLIFIED = 'PARTIALLY_NULLIFIED';
-    public const STATUS_CAPTURED = 'CAPTURED';
-    public const STATUS_FAILED = 'FAILED';
+    public const string STATUS_AUTHORIZED = 'AUTHORIZED';
+    public const string STATUS_NULLIFIED = 'NULLIFIED';
+    public const string STATUS_REVERSED = 'REVERSED';
+    public const string STATUS_PARTIALLY_NULLIFIED = 'PARTIALLY_NULLIFIED';
+    public const string STATUS_CAPTURED = 'CAPTURED';
+    public const string STATUS_FAILED = 'FAILED';
 
     /**
      * Creates a new Transaction instance.

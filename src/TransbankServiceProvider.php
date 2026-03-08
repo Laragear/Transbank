@@ -10,7 +10,7 @@ use Laragear\Transbank\Events\TransactionCreated;
 
 class TransbankServiceProvider extends ServiceProvider
 {
-    public const CONFIG = __DIR__.'/../config/transbank.php';
+    public const string CONFIG = __DIR__.'/../config/transbank.php';
 
     /**
      * Register bindings in the container.

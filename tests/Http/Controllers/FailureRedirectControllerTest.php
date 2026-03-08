@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Laragear\Transbank\Http\Controllers\FailureRedirectController;
 use Laragear\Transbank\RouteRedirect;
+use Orchestra\Testbench\Attributes\DefineEnvironment;
 use Tests\TestCase;
 
 class FailureRedirectControllerTest extends TestCase
@@ -28,7 +29,7 @@ class FailureRedirectControllerTest extends TestCase
         });
     }
 
-    protected function useTestbenchMiddleware($app)
+    protected function useTestbenchMiddleware()
     {
         RouteRedirect::$csrfMiddleware = VerifyCsrfToken::class;
     }
@@ -56,12 +57,10 @@ class FailureRedirectControllerTest extends TestCase
         static::assertSame(['destination' => 'confirm', 'status' => 303], $route->defaults);
     }
 
-    /**
-     * @define-env useTestbenchMiddleware
-     */
+    #[DefineEnvironment('useTestbenchMiddleware')]
     public function test_accepts_alternative_destination(): void
     {
-        Route::group(['middleware' => 'web'], static function (): void {
+        Route::group([], static function (): void {
             RouteRedirect::as('confirm', 'test');
 
             Route::get('test', static function (Request $request): string {
@@ -79,12 +78,10 @@ class FailureRedirectControllerTest extends TestCase
             ->assertSee('test:http://localhost/test?token_ws=foo');
     }
 
-    /**
-     * @define-env useTestbenchMiddleware
-     */
+    #[DefineEnvironment('useTestbenchMiddleware')]
     public function test_redirect_route_to_get_method_of_same_name(): void
     {
-        Route::group(['middleware' => 'web'], static function (): void {
+        Route::group([], static function (): void {
             RouteRedirect::as('confirm');
         });
 
@@ -97,12 +94,10 @@ class FailureRedirectControllerTest extends TestCase
             ->assertSee('http://localhost/confirm?token_ws=test');
     }
 
-    /**
-     * @define-env useTestbenchMiddleware
-     */
+    #[DefineEnvironment('useTestbenchMiddleware')]
     public function test_redirect_route_pushes_only_transbank_keys(): void
     {
-        Route::group(['middleware' => 'web'], static function (): void {
+        Route::group([], static function (): void {
             RouteRedirect::as('confirm');
         });
 
@@ -125,12 +120,10 @@ class FailureRedirectControllerTest extends TestCase
             ->assertRedirect('http://localhost/confirm?token_ws=foo&TBK_ID_SESSION=baz');
     }
 
-    /**
-     * @define-env useTestbenchMiddleware
-     */
+    #[DefineEnvironment('useTestbenchMiddleware')]
     public function test_aborts_if_no_transbank_key_is_present(): void
     {
-        Route::group(['middleware' => 'web'], static function (): void {
+        Route::group([], static function (): void {
             RouteRedirect::as('confirm');
         });
 

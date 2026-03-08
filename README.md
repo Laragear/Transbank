@@ -4,9 +4,9 @@
 [![Codecov Coverage](https://codecov.io/gh/Laragear/Transbank/graph/badge.svg?token=LKnve3PkRl)](https://codecov.io/gh/Laragear/Transbank)
 [![Maintainability](https://qlty.sh/badges/c6975072-d953-4d0a-ab6a-1c4e475db2f5/maintainability.svg)](https://qlty.sh/gh/Laragear/projects/Transbank)
 [![Sonarcloud Status](https://sonarcloud.io/api/project_badges/measure?project=Laragear_Transbank&metric=alert_status)](https://sonarcloud.io/dashboard?id=Laragear_Transbank)
-[![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/9.x/octane#introduction)
+[![Laravel Octane Compatibility](https://img.shields.io/badge/Laravel%20Octane-Compatible-success?style=flat&logo=laravel)](https://laravel.com/docs/13.x/octane#introduction)
 
-Easy-to-use Transbank SDK for PHP for Webpay, Webpay Mall and Oneclick Mall.
+Easy-to-use Transbank SDK for PHP for Webpay, Webpay Mall, and Oneclick Mall.
 
 ```php
 use Laragear\Transbank\Facades\Webpay;
@@ -33,11 +33,12 @@ public function confirm(WebpayRequest $payment)
 
 [![](.github/assets/support.png)](https://github.com/sponsors/DarkGhostHunter)
 
-Your support allows me to keep this package free, up-to-date and maintainable. Alternatively, you can **[spread the word!](http://twitter.com/share?text=I%20am%20using%20this%20cool%20PHP%20package&url=https://github.com%2FLaragear%2FReCaptcha&hashtags=PHP,Laravel,Transbank,WebPay)**
+Your support allows me to keep this package free, up-to-date, and maintainable. Alternatively, you can **[spread the word!](http://twitter.com/share?text=I%20am%20using%20this%20cool%20PHP%20package&url=https://github.com%2FLaragear%2FReCaptcha&hashtags=PHP,Laravel,Transbank,WebPay)**
 
 ## Requisites
 
-* Laravel 11, or later
+* PHP 8.3 or later
+* Laravel 12 or later
 
 # Installation
 
@@ -231,7 +232,7 @@ You will be able to hear all transactions started and completed. This package se
 
 ## Livewire Component
 
-This packages includes the [`Laragear/Transbank/Livewire/CheckoutWebpay`](src/Livewire/CheckoutWebpay.php) Liveware trait that automatically handles receiving a Webpay Transaction from Transbank [thanks to lifecycle hooks](https://livewire.laravel.com/docs/4.x/lifecycle-hooks#using-hooks-inside-a-trait).
+This packages includes the [`Laragear/Transbank/Livewire/InteractsWithWebpay`](src/Livewire/InteractsWithWebpay.php) Liveware trait that automatically handles receiving a Webpay Transaction from Transbank [thanks to lifecycle hooks](https://livewire.laravel.com/docs/4.x/lifecycle-hooks#using-hooks-inside-a-trait).
 
 The only requirement is to implement the `handleSuccessfulTransaction()` method, which receives the successful transaction. For example, you may use this to mark a hypothetical "Cart" model as paid. 
 
@@ -262,7 +263,7 @@ class Payment extends Component
 
 Apart from the `$isSuccessful` property to check the transaction success, this trait also offers other methods you can override for your convenience:
 
-- `handleWebpayException()`: Receives any exception thrown by Webpay (like connection errors).
+- `handleWebpayException()`: Controls exceptions thrown by Webpay (like connection errors).
 - `afterTransactionReceived()`: Handles the freshly retrieved transaction.
 - `handleTransactionStatus()`: Handles how the transaction should be considered successful or failed.
 - `handleFailedTransaction()`: Handles the Transaction when it has failed.
@@ -270,6 +271,28 @@ Apart from the `$isSuccessful` property to check the transaction success, this t
 - `handleNonWebpayResponse()`: Handles the component if no transaction was retrieved from Webpay.
 
 You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics.
+
+The `handleWebpayException()` receives any exception, like connection errors or form aborts, and lets you handle it as you wish. For example, you may suppress the exception and render your component as not-successful. Otherwise, any Exception returned will be thrown as usual, so it's great to _replace_ exceptions with your own.
+
+```php
+use Laragear\Transbank\Exceptions\ClientException;
+use Throwable;
+
+public $title = '';
+public $message = '';
+
+protected function handleWebpayException(Throwable $exception)
+{
+    if ($exception instanceof ClientException) {
+        $this->isSuccessful = false;
+    } else {
+        report($exception);
+        
+        $this->title = 'Transbank is unresponsive';
+        $this->message = 'We will look into it as soon as possible.';
+    }
+}
+```
 
 The `afterTransactionReceived()` method is great to override when you require to do logic _after_ the transaction has been received, but _before_ any other logic. For example, to retrieve a Checkout process.
 
@@ -322,7 +345,8 @@ You should use this [adding custom actions](https://filamentphp.com/docs/5.x/res
 ```php
 use App\Models\Checkout;
 use Filament\Schemas\Schema;
-use Illuminate\Support\Number;use Laragear\Transbank\Filament\WebpayAction;
+use Illuminate\Support\Number;
+use Laragear\Transbank\Filament\WebpayAction;
 
 public ?Checkout $checkout = null;
 
@@ -358,7 +382,7 @@ All exceptions implement `TransbankException`, so you can easily catch and check
 
 There are 4 types of exceptions:
 
-* `ClientException`: Any error byproduct of bad transactions, misconfiguration, aborts, abandonment, timeout or invalid values.
+* `ClientException`: Any error byproduct of bad transactions, misconfiguration, aborts, abandonment, timeout, or invalid values.
 * `ServerException`: Any internal Transbank servers errors.
 * `NetworkException`: Any communication error from Transbank Server, like network timeouts or wrong endpoints.
 * `UnknownException`: Any other error.
@@ -454,12 +478,12 @@ return [
 
 Disabled by default, you can further protect your endpoints using the [`transbank.protect` middleware](#middleware-endpoint-protection). Once enabled, it will save the token of every transaction created by 5 minutes, and once Transbank returns the user with the token, abort the request if it was not generated or was expired.
 
-This also handles which cache store to use, and which prefix to use when storing the tokens into the cache.
+This also handles which cache store to use and which prefix to use when storing the tokens into the cache.
 
 # Licence
 
-This specific package version is licensed under the terms of the [MIT License](LICENSE.md), at time of publishing.
+This specific package version is licensed under the terms of the [MIT License](LICENSE.md), at the time of publishing.
 
-[Laravel](https://laravel.com) is a Trademark of [Taylor Otwell](https://github.com/TaylorOtwell/). Copyright © 2011-2025 Laravel LLC.
+[Laravel](https://laravel.com) is a Trademark of [Taylor Otwell](https://github.com/TaylorOtwell/). Copyright © 2011–2026 Laravel LLC.
 
 `Redcompra`, `Webpay`, `Oneclick`, `Onepay`, `Patpass` and `Transbank` are trademarks of [Transbank S.A.](https://www.transbank.cl/). This package and its author are not associated with Transbank S.A.

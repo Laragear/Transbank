@@ -15,7 +15,7 @@ trait InteractsWithWebpay
      * @var string
      */
     #[Url]
-    public $token_ws = '';
+    public ?string $token_ws = null;
 
     /**
      * The Webpay Token for failed transactions.
@@ -23,7 +23,7 @@ trait InteractsWithWebpay
      * @var string
      */
     #[Url]
-    public $TBK_TOKEN = '';
+    public ?string $TBK_TOKEN = null;
 
     /**
      * Determines if the transaction was successful or not.

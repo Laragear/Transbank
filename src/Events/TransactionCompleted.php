@@ -5,7 +5,7 @@ namespace Laragear\Transbank\Events;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Services\Transactions\Transaction;
 
-class TransactionCompleted
+readonly class TransactionCompleted
 {
     /**
      * Create a new Transaction Completed event.

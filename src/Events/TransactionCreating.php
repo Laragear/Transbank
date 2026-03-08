@@ -4,7 +4,7 @@ namespace Laragear\Transbank\Events;
 
 use Laragear\Transbank\ApiRequest;
 
-class TransactionCreating
+readonly class TransactionCreating
 {
     /**
      * Create a new Transaction Creating event.

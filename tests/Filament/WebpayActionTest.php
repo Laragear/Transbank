@@ -14,9 +14,17 @@ use Livewire\LivewireServiceProvider;
 use Tests\TestCase;
 use Throwable;
 use function array_merge;
+use function class_exists;
 
 class WebpayActionTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        $this->markTestSkippedUnless(class_exists(ActionsServiceProvider::class), 'Filament was not installed');
+
+        parent::setUp();
+    }
+
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [
