@@ -5,6 +5,7 @@ namespace Laragear\Transbank\Services\Concerns;
 use Illuminate\Http\Client\Response;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Services\Transactions\Transaction;
+use Laragear\Transbank\Services\Transactions\TransactionDetailed;
 use function array_keys;
 use function str_replace;
 
@@ -19,7 +20,7 @@ trait SendsRequests
     }
 
     /**
-     * Sends a ApiRequest to Transbank, returns a response array.
+     * Sends an ApiRequest to Transbank, returns a response array.
      */
     protected function send(ApiRequest $apiRequest, array $replace = []): Response
     {
@@ -36,5 +37,13 @@ trait SendsRequests
     protected function transaction(string $action, Response $response): Transaction
     {
         return new Transaction(static::SERVICE_NAME, $action, $response->json());
+    }
+
+    /**
+     * Returns the Transaction Detailed object from Transbank response.
+     */
+    protected function transactionDetailed(string $action, Response $response): TransactionDetailed
+    {
+        return new TransactionDetailed(static::SERVICE_NAME, $action, $response->json());
     }
 }

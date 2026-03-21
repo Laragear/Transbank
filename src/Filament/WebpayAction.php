@@ -27,6 +27,8 @@ class WebpayAction extends Action
 
     protected string | Htmlable | Closure | null $label = 'Pay with Webpay';
 
+    protected Closure | string $currency;
+
     protected function setUp(): void
     {
         parent::setUp();

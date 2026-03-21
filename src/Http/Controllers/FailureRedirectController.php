@@ -17,7 +17,7 @@ class FailureRedirectController extends RedirectController
      */
     public function __invoke(Request $request, UrlGenerator $url): RedirectResponse
     {
-        $keys = $request->only('token_ws', 'TBK_TOKEN', 'TBK_ID_SESSION', 'TBK_ORDEN_COMPRA');
+        $keys = $request->only('token_ws', 'TBK_TOKEN', 'TBK_ID_SESSION', 'TBK_ORDEN_COMPRA', 'token', 'url_webpay');
 
         abort_if(empty($keys), 404);
 

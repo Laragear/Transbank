@@ -9,6 +9,7 @@ use function in_array;
 class Transaction extends Fluent
 {
     use DynamicallyAccess;
+    use HasCreditCardNumber;
 
     public const string STATUS_AUTHORIZED = 'AUTHORIZED';
     public const string STATUS_NULLIFIED = 'NULLIFIED';
@@ -42,8 +43,7 @@ class Transaction extends Fluent
             $success = $this->response_code === 0;
 
             if (array_key_exists('status', $this->attributes)) {
-                // @phpstan-ignore-next-line
-                $success = $success && $this->status && in_array($this->status, [
+                $success = $success && $this->attributes['status'] && in_array($this->attributes['status'], [
                     static::STATUS_AUTHORIZED,
                     static::STATUS_NULLIFIED,
                     static::STATUS_REVERSED,
@@ -72,13 +72,5 @@ class Transaction extends Fluent
     public function hasFailed(): bool
     {
         return $this->isNotSuccessful();
-    }
-
-    /**
-     * Returns the Credit Card numbers as an integer, or null if it doesn't exist.
-     */
-    public function getCreditCardNumber(): ?int
-    {
-        return (int) substr($this->attributes['card_detail']['card_number'] ?? '', -4);
     }
 }

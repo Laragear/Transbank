@@ -27,7 +27,7 @@ public function confirm(WebpayRequest $payment)
 
 > [!NOTE]
 >
-> Only supports Webpay at the moment. Webpay Mall and Oneclick Mall are planned based on support.
+> Only supports Webpay and Oneclick Mall at the moment. Other services are planned based on support.
 
 ## Become a sponsor
 
@@ -158,7 +158,7 @@ WEBPAY_KEY=597055555532
 WEBPAY_SECRET=579B532A7440BB0C9079DED94D31EA1615BACEB56610332264630D42D0A36B1C
 ```
 
-To operate in production mode, where all transaction will be real, you will need set the environment to `production` **explicitly** in using your `.env` environment file.
+To operate in production mode, where all transactions will be real, you will need to set the environment to `production` **explicitly** in using your `.env` environment file.
 
 ```dotenv
 TRANSBANK_ENV=production
@@ -232,9 +232,11 @@ You will be able to hear all transactions started and completed. This package se
 
 ## Livewire Component
 
-This packages includes the [`Laragear/Transbank/Livewire/InteractsWithWebpay`](src/Livewire/InteractsWithWebpay.php) Liveware trait that automatically handles receiving a Webpay Transaction from Transbank [thanks to lifecycle hooks](https://livewire.laravel.com/docs/4.x/lifecycle-hooks#using-hooks-inside-a-trait).
+This package includes the [`Laragear/Transbank/Livewire/InteractsWithWebpay`](src/Livewire/InteractsWithWebpay.php) Liveware trait that automatically handles receiving a Webpay Transaction from Transbank [thanks to lifecycle hooks](https://livewire.laravel.com/docs/4.x/lifecycle-hooks#using-hooks-inside-a-trait).
 
-The only requirement is to implement the `handleSuccessfulTransaction()` method, which receives the successful transaction. For example, you may use this to mark a hypothetical "Cart" model as paid. 
+This also includes the [`Laragear/Transbank/Livewire/InteractsWithOneclick`](src/Livewire/InteractsWithOneclick.php) Livewire trait to handle incoming registration attempts from Transbank.
+
+The only requirement is to implement the `handleSuccessfulTransaction()` method, which receives the successful transaction or registration. For example, you may use this to mark a hypothetical "Cart" model as paid. 
 
 ```php
 use App\Models\Checkout;
@@ -261,6 +263,35 @@ class Payment extends Component
 } 
 ```
 
+For the case of Oneclick registration, you should implement the `handleSuccessfulRegistration()` in your component.
+
+```php
+use App\Models\Checkout;
+use Illuminate\Contracts\View\View;
+use Laragear\Transbank\Livewire\InteractsWithOneclick;
+use Laragear\Transbank\Services\Transactions\Transaction;
+use Livewire\Component;
+
+class Subscription extends Component
+{
+    use InteractsWithOneclick;
+    
+    protected function handleSuccessfulTransaction(Transaction $transaction) : void
+    {
+        auth()->user()->card()->updateOrCreate([
+            'transbank_user' => $transaction->get('tbk_user') 
+            'card_type' => $transaction->get('card_type'),
+            'card_number' => $transaction->getCreditCardNumber(), 
+        ]);
+    }
+    
+    public function render(): View 
+    {
+        return view('cart.subscription.status');
+    }
+} 
+```
+
 Apart from the `$isSuccessful` property to check the transaction success, this trait also offers other methods you can override for your convenience:
 
 - `handleWebpayException()`: Controls exceptions thrown by Webpay (like connection errors).
@@ -269,6 +300,10 @@ Apart from the `$isSuccessful` property to check the transaction success, this t
 - `handleFailedTransaction()`: Handles the Transaction when it has failed.
 - `afterHandledTransaction()`: Handles the Transaction after failure or success.
 - `handleNonWebpayResponse()`: Handles the component if no transaction was retrieved from Webpay.
+
+> [!NOTE]
+> 
+> Similar methods are availble for the `InteractsWithOneclick` trait, like `handleNonOneclickResponse()`. 
 
 You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics.
 
@@ -294,7 +329,7 @@ protected function handleWebpayException(Throwable $exception)
 }
 ```
 
-The `afterTransactionReceived()` method is great to override when you require to do logic _after_ the transaction has been received, but _before_ any other logic. For example, to retrieve a Checkout process.
+The `afterTransactionReceived()` method is great to override when you require doing logic _after_ the transaction has been received, but _before_ any other logic. For example, to retrieve a Checkout process.
 
 ```php
 use App\Models\Checkout;
@@ -338,15 +373,15 @@ protected function handleSuccessfulTransaction(Transaction $transaction) : void
 
 ### Filament PHP Action
 
-If you use Filament PHP, you can use the [`Laragear\Transbank\Filament\WebpayAction`](src/Filament/WebpayAction.php) [Filament Action](https://filamentphp.com/docs/5.x/actions/overview) to show a button that automatically creates a payment and redirects the user to Transbank for the payment flow.
+If you use Filament PHP, you can use the [`Laragear\Transbank\Filament\WebpayAction`](src/Filament/WebpayAction.php) and [`Laragear\Transbank\Filament\OneclickAction](src/Filament/OneclickAction.php) [Filament Actions](https://filamentphp.com/docs/5.x/actions/overview) to show a button that automatically creates a payment and redirects the user to Transbank for the payment flow.
 
-You should use this [adding custom actions](https://filamentphp.com/docs/5.x/resources/editing-records#custom-actions), or anywhere you want. Simple use the `data()` or the methods `buyOrder()`, `amount()` and `returnUrl()` to set the minimum data to create a Transaction in Webpay servers.
+You should use this [adding custom actions](https://filamentphp.com/docs/5.x/resources/editing-records#custom-actions), or anywhere you want. Simple use the `data()` or the methods `buyOrder()`, `amount()` and `returnUrl()` to set the minimum data to create a Transaction in Webpay servers, or `username()`, `email()` and `returnUrl()` for a Oneclick registration.
 
 ```php
 use App\Models\Checkout;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Number;
-use Laragear\Transbank\Filament\WebpayAction;
+use Laragear\Transbank\Filament\OneclickAction;use Laragear\Transbank\Filament\WebpayAction;
 
 public ?Checkout $checkout = null;
 
@@ -365,6 +400,13 @@ protected function getFormActions(): array
                 'buyOrder' => $this->checkout->asUlid(),            
                 'amount' => $this->checkout->total(),            
                 'returnUrl' => action('App\Filament\Checkout\Pages\Checkout'),            
+            ]),
+        OneclickAction::make('register')
+            ->label('Pay automatically')
+            ->data([
+                'username' => auth()->user()->name,
+                'email' => auth()->user()->email,
+                'returnUrl' => action('App\Filament\Checkout\Pages\Register')
             ])
     ];
 }
@@ -372,9 +414,11 @@ protected function getFormActions(): array
 
 When clicking the `Pay with Webpay` button, a redirection will be returned so the user immediately start the payment flow.
 
+For the case of the `OneclickAction`, a modal will be rendered to manually redirect the user to Transbank using a `POST` redirection. 
+
 ## Exceptions
 
-All exceptions implement `TransbankException`, so you can easily catch and check what happened.
+All exceptions implement `TransbankException`, so you can catch and check what happened.
 
 > [!IMPORTANT]
 >
