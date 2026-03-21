@@ -3,6 +3,7 @@
 namespace Tests\Services\Transactions;
 
 use Laragear\Transbank\Services\Transactions\Transaction;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase as PHPUnitTestCase;
 
 class TransactionTest extends PHPUnitTestCase
@@ -133,31 +134,42 @@ class TransactionTest extends PHPUnitTestCase
         static::assertFalse($transaction->isSuccessful());
     }
 
-    public function test_get_credit_card_number(): void
+    public static function providesCreditCardNumber(): array
+    {
+        return [
+            ['XXXXXXXXXXXX6623'],
+            ['6623'],
+            [6623],
+        ];
+    }
+
+    #[DataProvider('providesCreditCardNumber')]
+    public function test_get_credit_card_number_from_nested(mixed $number): void
     {
         $transaction = new Transaction('foo', 'bar', [
             'card_detail' => [
-                'card_number' => 'XXXXXXXXXXXX6623'
+                'card_number' => $number
             ]
         ]);
 
         static::assertEquals(6623, $transaction->getCreditCardNumber());
+    }
 
+    #[DataProvider('providesCreditCardNumber')]
+    public function test_get_credit_card_number_from_attribute(mixed $number): void
+    {
         $transaction = new Transaction('foo', 'bar', [
-            'card_detail' => [
-                'card_number' => '6623'
-            ]
+            'card_number' => $number
         ]);
 
         static::assertEquals(6623, $transaction->getCreditCardNumber());
+    }
 
-        $transaction = new Transaction('foo', 'bar', [
-            'card_detail' => [
-                'card_number' => 6623
-            ]
-        ]);
+    public function test_get_credit_card_number_returns_null_if_does_not_exist(): void
+    {
+        $transaction = new Transaction('foo', 'bar', []);
 
-        static::assertEquals(6623, $transaction->getCreditCardNumber());
+        static::assertNull($transaction->getCreditCardNumber());
     }
 
     public function test_serializes_to_json(): void

@@ -2,11 +2,14 @@
 
 namespace Tests\Listeners;
 
+use Closure;
 use Illuminate\Contracts\Cache\Factory;
 use Illuminate\Contracts\Cache\Repository;
 use Laragear\Transbank\ApiRequest;
+use Laragear\Transbank\Events\RegistrationStarted;
 use Laragear\Transbank\Events\TransactionCreated;
 use Laragear\Transbank\Services\Transactions\Response;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class SaveTransactionTokenTest extends TestCase
@@ -16,24 +19,42 @@ class SaveTransactionTokenTest extends TestCase
         $app->make('config')->set('transbank.protect.enabled', true);
     }
 
-    protected function dispatch()
+    public static function providesDispatchedEvent(): array
     {
-        $this->app->make('events')->dispatch(
-            new TransactionCreated(
-                new ApiRequest('foo', 'bar', ['baz' => 'quz']),
-                new Response('test_token', 'https://app.com/test', 'test_key')
-            )
-        );
+        return [
+            [
+                function (): void {
+                    $this->app->make('events')->dispatch(
+                        new TransactionCreated(
+                            new ApiRequest('foo', 'bar', ['baz' => 'quz']),
+                            new Response('test_token', 'https://app.com/test', 'test_key')
+                        )
+                    );
+                }
+            ],
+            [
+                function (): void {
+                    $this->app->make('events')->dispatch(
+                        new RegistrationStarted(
+                            new ApiRequest('foo', 'bar', ['baz' => 'quz']),
+                            new Response('test_token', 'https://app.com/test', 'test_key')
+                        )
+                    );
+                }
+            ]
+        ];
     }
 
-    public function test_saves_token_into_cache(): void
+    #[DataProvider('providesDispatchedEvent')]
+    public function test_saves_token_into_cache(Closure $dispatch): void
     {
-        $this->dispatch();
+        $dispatch->call($this);
 
         static::assertTrue($this->app->make('cache')->has('transbank|token|test_token'));
     }
 
-    public function test_uses_custom_cache_store(): void
+    #[DataProvider('providesDispatchedEvent')]
+    public function test_uses_custom_cache_store(Closure $dispatch): void
     {
         $this->app->make('config')->set('transbank.protect.store', 'foo');
 
@@ -45,14 +66,15 @@ class SaveTransactionTokenTest extends TestCase
             return $repository;
         });
 
-        $this->dispatch();
+        $dispatch->call($this);
     }
 
-    public function test_uses_custom_cache_prefix(): void
+    #[DataProvider('providesDispatchedEvent')]
+    public function test_uses_custom_cache_prefix(Closure $dispatch): void
     {
         $this->app->make('config')->set('transbank.protect.prefix', 'foo');
 
-        $this->dispatch();
+        $dispatch->call($this);
 
         static::assertTrue($this->app->make('cache')->has('foo|test_token'));
     }

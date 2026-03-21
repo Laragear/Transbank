@@ -40,6 +40,6 @@ class ProtectTransaction
      */
     protected function token(Request $request): ?string
     {
-        return $request->input('token_ws') ?? $request->input('TBK_TOKEN');
+        return $request->input('token_ws') ?? $request->input('TBK_TOKEN') ?? $request->input('token');
     }
 }

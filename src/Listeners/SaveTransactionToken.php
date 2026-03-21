@@ -4,6 +4,7 @@ namespace Laragear\Transbank\Listeners;
 
 use Illuminate\Contracts\Cache\Factory as CacheContract;
 use Illuminate\Contracts\Config\Repository as ConfigContract;
+use Laragear\Transbank\Events\RegistrationStarted;
 use Laragear\Transbank\Events\TransactionCreated;
 
 class SaveTransactionToken
@@ -19,7 +20,7 @@ class SaveTransactionToken
     /**
      * Handle the fired event.
      */
-    public function handle(TransactionCreated $event): void
+    public function handle(TransactionCreated|RegistrationStarted $event): void
     {
         $this->cache
             ->store($this->config->get('transbank.protect.store'))

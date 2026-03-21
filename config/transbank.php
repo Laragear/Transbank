@@ -1,5 +1,6 @@
 <?php
 
+use Laragear\Transbank\Services\Oneclick;
 use Laragear\Transbank\Services\Webpay;
 use Laragear\Transbank\Transbank;
 
@@ -59,6 +60,10 @@ return [
             'key' => env('WEBPAY_KEY', Webpay::INTEGRATION_KEY),
             'secret' => env('WEBPAY_SECRET', Transbank::INTEGRATION_SECRET),
         ],
+        'oneclick' => [
+            'key' => env('ONECLICK_KEY', Oneclick::INTEGRATION_KEY),
+            'secret' => env('ONECLICK_SECRET', Transbank::INTEGRATION_SECRET),
+        ]
     ],
 
     /*

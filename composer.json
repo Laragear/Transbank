@@ -38,7 +38,8 @@
     "require-dev": {
         "orchestra/testbench": "10.*|11.*",
         "livewire/livewire": "3.*|4.*|5.*",
-        "filament/actions": "4.*|5.*"
+        "filament/actions": "4.*|5.*",
+        "laragear/meta-testing": "^4.1"
     },
     "autoload": {
         "psr-4": {

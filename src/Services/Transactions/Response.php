@@ -10,9 +10,14 @@ use function redirect;
 class Response implements Stringable, Responsable
 {
     /**
-     * The name of the key holding the token.
+     * The name of the key holding the token for Webpay Transactions.
      */
     public const string WEBPAY_TOKEN = 'token_ws';
+
+    /**
+     * The name of the key holding the token for Oneclick Registrations.
+     */
+    public const string ONECLICK_TOKEN = 'TBK_TOKEN';
 
     /**
      * Response constructor.
@@ -24,8 +29,8 @@ class Response implements Stringable, Responsable
     public function __construct(
         protected string $token,
         protected string $url,
-        protected string $tokenName = self::WEBPAY_TOKEN)
-    {
+        protected string $tokenName = self::WEBPAY_TOKEN,
+    ) {
         //
     }
 
@@ -46,11 +51,11 @@ class Response implements Stringable, Responsable
     }
 
     /**
-     * Transforms the Response into a String for Webpay GET redirects.
+     * Returns a string representation of the object.
      */
-    public function __toString(): string
+    public function toString(): string
     {
-        return $this->url . '?' . http_build_query([$this->tokenName => $this->token]);
+        return $this->url.'?'.http_build_query([$this->tokenName => $this->token]);
     }
 
     /**
@@ -59,5 +64,13 @@ class Response implements Stringable, Responsable
     public function toResponse($request): RedirectResponse
     {
         return redirect()->away($this);
+    }
+
+    /**
+     * Transforms the Response into a String for Webpay GET redirects.
+     */
+    public function __toString(): string
+    {
+        return $this->toString();
     }
 }

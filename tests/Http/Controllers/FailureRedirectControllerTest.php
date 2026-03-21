@@ -2,6 +2,7 @@
 
 namespace Tests\Http\Controllers;
 
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Http\Request;
 use Illuminate\Routing\RouteCollection;
@@ -17,7 +18,7 @@ class FailureRedirectControllerTest extends TestCase
 {
     protected function tearDown(): void
     {
-        RouteRedirect::$csrfMiddleware = VerifyCsrfToken::class;
+        RouteRedirect::$csrfMiddleware = PreventRequestForgery::class;
 
         parent::tearDown();
     }
@@ -31,7 +32,7 @@ class FailureRedirectControllerTest extends TestCase
 
     protected function useTestbenchMiddleware()
     {
-        RouteRedirect::$csrfMiddleware = VerifyCsrfToken::class;
+        RouteRedirect::$csrfMiddleware = PreventRequestForgery::class;
     }
 
     protected function routes(): RouteCollection
@@ -106,9 +107,11 @@ class FailureRedirectControllerTest extends TestCase
             'TBK_TOKEN' => 'bar',
             'TBK_ID_SESSION' => 'baz',
             'TBK_ORDEN_COMPRA' => 'quz',
+            'token' => 'cugar',
+            'url_webpay' => 'something'
         ])
             ->assertRedirect(
-                'http://localhost/confirm?token_ws=foo&TBK_TOKEN=bar&TBK_ID_SESSION=baz&TBK_ORDEN_COMPRA=quz'
+                'http://localhost/confirm?token_ws=foo&TBK_TOKEN=bar&TBK_ID_SESSION=baz&TBK_ORDEN_COMPRA=quz&token=cugar&url_webpay=something'
             );
 
         $this->post('confirm', [
