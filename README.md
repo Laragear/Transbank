@@ -191,7 +191,7 @@ To avoid that, use the convenient `RouteRedirect` facade to create a ready-made 
 ```php
 use Illuminate\Support\Facades\Route;
 use Laragear\Transbank\Http\Requests\WebpayRequest;
-use Laragear\Transbank\Facades\RouteRedirect;
+use Laragear\Transbank\RouteRedirect;
 
 Route::get('confirm', function (WebpayRequest $request) {
     // ...
@@ -205,7 +205,7 @@ By default, the redirection uses the same path, but you can change it using a se
 ```php
 use Illuminate\Support\Facades\Route;
 use Laragear\Transbank\Http\Requests\WebpayRequest;
-use Laragear\Transbank\Facades\RouteRedirect;
+use Laragear\Transbank\RouteRedirect;
 
 Route::get('confirm', function (WebpayRequest $request) {
     // ... Handle the successful transaction.
@@ -220,7 +220,15 @@ RouteRedirect::as('confirm', 'failed-transaction');
 
 > [!IMPORTANT]
 >
-> If you're using you own middleware to verify CSRF/XSRF tokens, set the class in `RouteRedirect::$csrfMiddleware`.  
+> If you're using your own middleware to verify CSRF/XSRF tokens, set the class in `RouteRedirect::$csrfMiddleware`.  
+
+If you're using [Livewire](#livewire-component) or [Filament](#filament-php-action), you should use `RouteRedirect` over the path used by that component. There is no other way since a `POST` route must be registered to avoid errors:
+
+```php
+use Laragear\Transbank\RouteRedirect;
+
+RouteRedirect::as('/admin/payments/confirm');
+```
 
 ## Events
 
