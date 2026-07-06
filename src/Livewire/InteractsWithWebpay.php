@@ -45,7 +45,9 @@ trait InteractsWithWebpay
             } catch (Throwable $exception) {
                 $result = $this->handleWebpayException($exception);
 
-                throw ($result instanceof Throwable ? $result : $exception);
+                if ($result instanceof Throwable) {
+                    throw $result;
+                }
             }
 
             $this->afterTransactionReceived($transaction);
