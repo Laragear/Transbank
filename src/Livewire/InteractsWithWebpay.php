@@ -26,6 +26,14 @@ trait InteractsWithWebpay
     public ?string $TBK_TOKEN = null;
 
     /**
+     * The Buy Order for failed transactions (returned as fallback for aborted/failed transactions)
+     *
+     * @var string
+     */
+    #[Url]
+    public ?string $TBK_ORDEN_COMPRA = null;
+
+    /**
      * Determines if the transaction was successful or not.
      *
      * @var bool|null
