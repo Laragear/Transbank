@@ -7,7 +7,7 @@ class Transbank
     /**
      * Current SDK version.
      */
-    public const string VERSION = '1.2';
+    public const string VERSION = '4.x';
 
     /**
      * The name of the production environment.
