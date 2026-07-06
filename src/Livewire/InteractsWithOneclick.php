@@ -37,9 +37,12 @@ trait InteractsWithOneclick
             } catch (Throwable $exception) {
                 $result = $this->handleOneclickException($exception);
 
-                if ($result instanceof Throwable) {
-                    throw $result;
+                // If the result is falsy (null, false, etc.), just return and do nothing else.
+                if (!$result) {
+                    return;
                 }
+
+                throw $result instanceof Throwable ? $result : $exception;
             }
 
             $this->afterRegistrationReceived($transaction);

@@ -45,9 +45,12 @@ trait InteractsWithWebpay
             } catch (Throwable $exception) {
                 $result = $this->handleWebpayException($exception);
 
-                if ($result instanceof Throwable) {
-                    throw $result;
+                // If the result is falsy (null, false, etc.), just return and do nothing else.
+                if (!$result) {
+                    return;
                 }
+
+                throw $result instanceof Throwable ? $result : $exception;
             }
 
             $this->afterTransactionReceived($transaction);
