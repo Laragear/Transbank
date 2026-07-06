@@ -7,6 +7,7 @@ use GuzzleHttp\Psr7\Response as GuzzleResponse;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Exceptions\ClientException;
@@ -220,6 +221,37 @@ class ClientTest extends TestCase
         $this->app->make(Client::class)->send(
             'post', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
         );
+    }
+
+    public function test_factory_returns_response_when_status_422_aborted(): void
+    {
+        $this->app->make('config')->set('transbank.http.options', ['foo' => 'bar']);
+
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
+            static function (): MockInterface {
+                $pending = Mockery::mock(PendingRequest::class)->makePartial();
+
+                $pending->expects('send')->andThrow(
+                    new RequestException(
+                        new Response(
+                            new GuzzleResponse(
+                                422, ['content-type' => 'application/json'], json_encode([
+                                    'error_message' => 'Transaction has an invalid finished state: aborted'
+                                ])
+                            )
+                        )
+                    )
+                );
+
+                return $pending;
+            }
+        );
+
+        $response = $this->app->make(Client::class)->send(
+            'post', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
+        );
+
+        static::assertTrue($response->status() === 422);
     }
 
     public function test_factory_returns_throwable_transformed_into_unknown_exception(): void

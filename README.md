@@ -122,6 +122,10 @@ public function confirm(WebpayRequest $request)
 }
 ```
 
+> [!IMPORTANT]
+> 
+> When Transbank returns an `422` "Aborted" Response, this will not be rendered as an exception but a normal response. This allows your application to receive the errored response, retrieve the payment session, and act accordingly. 
+
 ### Validating Transbank Requests
 
 If a user or bot hits your "return" URL without the transaction token, an exception will be thrown by your application. To avoid this, you may enable validation to redirect the browser to your application home or any other given relative path. You may enable this in your `bootstrap/app.php` or `AppServiceProvider` at boot time.

@@ -6,6 +6,7 @@ use Illuminate\Contracts\Config\Repository as ConfigContract;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Factory as HttpFactory;
 use Illuminate\Http\Client\PendingRequest;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
 use Laragear\Transbank\ApiRequest;
 use Laragear\Transbank\Exceptions\ClientException;
@@ -94,6 +95,13 @@ class Client
 
         try {
             return $request->send($method, $this->setApiVersion($endpoint), $data);
+        } catch (RequestException $exception) {
+            // If the transaction is aborted, it will be rendered as a 422. Return the response as-is.
+            if ($exception->response->status() === 422) {
+                return $exception->response;
+            }
+
+            throw $exception;
         } catch (ConnectionException $exception) {
             throw new NetworkException('Could not establish connection with Transbank.', $api, null, $exception);
         } catch (Throwable $exception) {
@@ -119,17 +127,17 @@ class Client
             !$response->toPsrResponse()->getBody()->getSize()) {
             throw new ServerException('Non-JSON response received.', $apiRequest, $response);
         }
-
         if ($response->redirect()) {
             throw new ServerException('A redirection was returned.', $apiRequest, $response);
         }
 
-        if ($response->serverError()) {
-            throw new ServerException($this->getErrorMessage($response), $apiRequest, $response);
+        // Only return an error if the response is not 422 (aborted).
+        if ($response->clientError() && $response->status() !== 422) {
+            throw new ClientException($this->getErrorMessage($response), $apiRequest, $response);
         }
 
-        if ($response->clientError()) {
-            throw new ClientException($this->getErrorMessage($response), $apiRequest, $response);
+        if ($response->serverError()) {
+            throw new ServerException($this->getErrorMessage($response), $apiRequest, $response);
         }
     }
 
