@@ -294,7 +294,7 @@ class Subscription extends Component
 
 Apart from the `$isSuccessful` property to check the transaction success, this trait also offers other methods you can override for your convenience:
 
-- `handleWebpayException()`: Controls exceptions thrown by Webpay (like connection errors).
+- `handleWebpayException()`: Controls exceptions thrown by Webpay (like connection errors) or silences it.
 - `afterTransactionReceived()`: Handles the freshly retrieved transaction.
 - `handleTransactionStatus()`: Handles how the transaction should be considered successful or failed.
 - `handleFailedTransaction()`: Handles the Transaction when it has failed.
@@ -307,7 +307,7 @@ Apart from the `$isSuccessful` property to check the transaction success, this t
 
 You can use these methods to show different messages to the user. For example, you can use `handleNonWebpayResponse()` to redirect the user back to the cart checkout route, or `handleFailedTransaction()` to store the failure for analytics.
 
-The `handleWebpayException()` receives any exception, like connection errors or form aborts, and lets you handle it as you wish. For example, you may suppress the exception and render your component as not-successful. Otherwise, any Exception returned will be thrown as usual, so it's great to _replace_ exceptions with your own.
+The `handleWebpayException()` receives any exception, like connection errors or form aborts, and lets you handle it as you wish. For example, you may suppress the exception and render your component as not-successful. Otherwise, any Exception returned will be thrown as usual, so it's great to _replace_ exceptions with your own or modify the component view.
 
 ```php
 use Laragear\Transbank\Exceptions\ClientException;
