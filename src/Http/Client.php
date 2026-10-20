@@ -16,6 +16,7 @@ use Laragear\Transbank\Exceptions\UnknownException;
 use Laragear\Transbank\Transbank;
 use Throwable;
 use function str_replace;
+use function strtoupper;
 
 class Client
 {
@@ -67,7 +68,7 @@ class Client
             ->withUserAgent('php:laragear/transbank/'.Transbank::VERSION)
             ->withOptions($this->config->get('transbank.http.options'));
 
-        $response = $this->toTransbank($pendingRequest, $request, $method, $endpoint);
+        $response = $this->toTransbank($pendingRequest, $request, strtoupper($method), $endpoint);
 
         $this->throwExceptionOnResponseError($request, $response);
 
@@ -91,7 +92,7 @@ class Client
     protected function toTransbank(PendingRequest $request, ApiRequest $api, string $method, string $endpoint): Response
     {
         // If the request is reading, we won't send any data, or the request may stall.
-        $data = $method === 'get' ? [] : ['json' => $api->attributes];
+        $data = $method === 'GET' ? [] : ['json' => $api->attributes];
 
         try {
             return $request->send($method, $this->setApiVersion($endpoint), $data);
