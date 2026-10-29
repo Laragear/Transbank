@@ -42,7 +42,7 @@ Verification: The controller returns an automatic HTTP redirect sending the user
 
 ## Confirming transactions safely with WebpayRequest
 
-Type-hint `WebpayRequest` in your return controller method instead of standard `Request`, and call `$request->isSuccessful()` before accessing transaction data, because `WebpayRequest` safely commits the token only once and handles aborted or failed transactions without throwing unhandled exceptions.
+Type-hint `WebpayRequest` in your return controller method instead of standard `Request`, and call `$request->isSuccessful()` before accessing transaction data, because `WebpayRequest` safely commits the token only once and handles aborted or failed transactions without throwing unhandled exceptions. When the request is failure-shaped, `buyOrder()` can only return the client-supplied `TBK_ORDEN_COMPRA`, so verify it against your application's own records before writing anything.
 
 ```php
 namespace App\Http\Controllers;
@@ -81,7 +81,7 @@ Verification: The code safely checks payment status, commits the token on Webpay
 
 ## Committing conditionally before final charge
 
-Use `$request->commitWhen()` or `$request->commitUnless()` on `WebpayRequest` instead of querying order records after committing, because it evaluates pre-commit constraints against transaction status before charging the user's card.
+Use `$request->commitWhen()` or `$request->commitUnless()` on `WebpayRequest` instead of querying order records after committing, because it evaluates pre-commit constraints against transaction status before charging the user's card. If the request turns out failure-shaped, the buy order used for the lookup is client-supplied, so verify it against your application's own records before writing anything.
 
 ```php
 namespace App\Http\Controllers;

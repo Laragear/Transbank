@@ -15,6 +15,7 @@ use Laragear\Transbank\Exceptions\ServerException;
 use Laragear\Transbank\Exceptions\UnknownException;
 use Laragear\Transbank\Transbank;
 use Throwable;
+use function str_contains;
 use function str_replace;
 use function strtoupper;
 
@@ -61,12 +62,25 @@ class Client
         /** @var \Illuminate\Http\Client\PendingRequest $pendingRequest */
         $pendingRequest = $this->http
             ->withoutRedirecting()
-            ->retry($this->config->get('transbank.http.retries'))
             ->timeout($this->config->get('transbank.http.timeout'))
             ->withHeaders($this->getHeadersKeysForService($request->service))
             ->baseUrl($this->getTransbankBaseEndpoint())
             ->withUserAgent('php:laragear/transbank/'.Transbank::VERSION)
             ->withOptions($this->config->get('transbank.http.options'));
+
+        // Refunds and captures are not idempotent, so they are never retried; everything else
+        // retries only on connection failures or server (5xx) errors — never on 4xx responses.
+        if (! str_contains($endpoint, '/refunds') && ! str_contains($endpoint, '/capture')) {
+            $pendingRequest->retry(
+                $this->config->get('transbank.http.retries'),
+                0,
+                static function (Throwable $failure): bool {
+                    return $failure instanceof ConnectionException
+                        || ($failure instanceof RequestException
+                            && $failure->response->serverError());
+                }
+            );
+        }
 
         $response = $this->toTransbank($pendingRequest, $request, strtoupper($method), $endpoint);
 

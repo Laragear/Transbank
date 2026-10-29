@@ -20,6 +20,7 @@ use Laragear\Transbank\Transbank;
 use Mockery;
 use Mockery\MockInterface;
 use Tests\TestCase;
+use Closure;
 use function json_encode;
 
 class ClientTest extends TestCase
@@ -49,7 +50,7 @@ class ClientTest extends TestCase
                 static function (): MockInterface {
                     $mock = Mockery::mock(PendingRequest::class);
 
-                    $mock->expects('retry')->with(3)->andReturnSelf();
+                    $mock->expects('retry')->with(3, 0, Mockery::type(Closure::class))->andReturnSelf();
                     $mock->expects('timeout')->with(10)->andReturnSelf();
                     $mock->expects('withHeaders')
                         ->with([Client::HEADER_KEY => 'key', Client::HEADER_SECRET => 'secret'])
@@ -82,7 +83,7 @@ class ClientTest extends TestCase
             static function (): MockInterface {
                 $pending = Mockery::mock(PendingRequest::class)->makePartial();
 
-                $pending->expects('retry')->with(10)->andReturnSelf();
+                $pending->expects('retry')->with(10, 0, Mockery::type(Closure::class))->andReturnSelf();
                 $pending->expects('send')->andReturn(static::response());
 
                 return $pending;
@@ -443,6 +444,88 @@ class ClientTest extends TestCase
 
         $response = $this->app->make(Client::class)->send(
             'get', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
+        );
+
+        static::assertTrue($response->ok());
+    }
+
+    public function test_only_retries_connection_exceptions_and_server_errors(): void
+    {
+        $when = null;
+
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
+            static function () use (&$when): MockInterface {
+                $pending = Mockery::mock(PendingRequest::class)->makePartial();
+
+                $pending->expects('retry')->with(3, 0, Mockery::on(
+                    static function (Closure $callback) use (&$when): bool {
+                        $when = $callback;
+
+                        return true;
+                    }
+                ))->andReturnSelf();
+                $pending->expects('send')->andReturn(static::response());
+
+                return $pending;
+            }
+        );
+
+        $this->app->make(Client::class)->send(
+            'post', 'https://endpoint/{api_version}/', new ApiRequest('foo', 'bar', ['foo' => 'bar'])
+        );
+
+        static::assertTrue(($when)(new ConnectionException('could not connect')));
+        static::assertTrue(($when)(new RequestException(static::response(500))));
+        static::assertFalse(($when)(new RequestException(static::response(422))));
+        static::assertFalse(($when)(new RequestException(static::response(400))));
+        static::assertFalse(($when)(new Exception('something else')));
+    }
+
+    public function test_refund_endpoint_is_never_retried(): void
+    {
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
+            static function (): MockInterface {
+                // A strict mock without a "retry" expectation: if the Client applies a retry, the test fails.
+                $pending = Mockery::mock(PendingRequest::class);
+
+                $pending->expects('timeout')->with(10)->andReturnSelf();
+                $pending->expects('withHeaders')->andReturnSelf();
+                $pending->expects('baseUrl')->andReturnSelf();
+                $pending->expects('withUserAgent')->andReturnSelf();
+                $pending->expects('withOptions')->andReturnSelf();
+                $pending->expects('send')->andReturn(static::response());
+
+                return $pending;
+            }
+        );
+
+        $response = $this->app->make(Client::class)->send(
+            'post', 'https://endpoint/{api_version}/refunds', new ApiRequest('webpay', 'bar', ['foo' => 'bar'])
+        );
+
+        static::assertTrue($response->ok());
+    }
+
+    public function test_capture_endpoint_is_never_retried(): void
+    {
+        $this->mock(Factory::class)->expects('withoutRedirecting')->andReturnUsing(
+            static function (): MockInterface {
+                // A strict mock without a "retry" expectation: if the Client applies a retry, the test fails.
+                $pending = Mockery::mock(PendingRequest::class);
+
+                $pending->expects('timeout')->with(10)->andReturnSelf();
+                $pending->expects('withHeaders')->andReturnSelf();
+                $pending->expects('baseUrl')->andReturnSelf();
+                $pending->expects('withUserAgent')->andReturnSelf();
+                $pending->expects('withOptions')->andReturnSelf();
+                $pending->expects('send')->andReturn(static::response());
+
+                return $pending;
+            }
+        );
+
+        $response = $this->app->make(Client::class)->send(
+            'post', 'https://endpoint/{api_version}/capture', new ApiRequest('webpay', 'bar', ['foo' => 'bar'])
         );
 
         static::assertTrue($response->ok());

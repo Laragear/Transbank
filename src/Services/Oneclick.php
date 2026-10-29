@@ -105,14 +105,14 @@ class Oneclick
     {
         $apiRequest = $this->request(static::ACTION_CONFIRM);
 
-        $this->logger->debug('Finishing registration', ['tbkUser' => $tbkUser, 'api_request' => $apiRequest]);
+        $this->logger->debug('Finishing registration', ['tbkUser' => $this->maskTbkUser($tbkUser), 'api_request' => $apiRequest]);
         $this->event->dispatch(new RegistrationFinishing($apiRequest));
 
         $response = $this->send($apiRequest, ['{tbkUser}' => $tbkUser]);
 
         $transaction = $this->transaction(static::ACTION_CONFIRM, $response);
 
-        $this->logResponse($apiRequest, $response, $tbkUser);
+        $this->logResponse($apiRequest, $response, $this->maskTbkUser($tbkUser));
         $this->event->dispatch(new RegistrationFinished($apiRequest, $transaction));
 
         return $transaction;
@@ -128,12 +128,12 @@ class Oneclick
             'username' => $username,
         ]);
 
-        $this->logger->debug('Deleting registration', ['api_request' => $apiRequest]);
+        $this->logger->debug('Deleting registration', ['api_request' => $this->redactApiRequest($apiRequest)]);
         $this->event->dispatch(new RegistrationDeleting($apiRequest));
 
         $response = $this->send($apiRequest);
 
-        $this->logResponse($apiRequest, $response, $tbkUser);
+        $this->logResponse($apiRequest, $response, $this->maskTbkUser($tbkUser));
         $this->event->dispatch(new RegistrationDeleted($apiRequest));
     }
 
@@ -155,7 +155,7 @@ class Oneclick
             'details' => $this->normalizeDetails($details),
         ]);
 
-        $this->logger->debug('Committing transaction', ['tbk_user' => $tbkUser, 'api_request' => $apiRequest]);
+        $this->logger->debug('Committing transaction', ['tbk_user' => $this->maskTbkUser($tbkUser), 'api_request' => $this->redactApiRequest($apiRequest)]);
         $this->event->dispatch(new TransactionDetailedCharging($apiRequest));
 
         $response = $this->send($apiRequest);
@@ -163,9 +163,9 @@ class Oneclick
         $transaction = $this->transactionDetailed(static::ACTION_COMMIT, $response);
 
         $this->logger->debug('Response received', [
-            'api_request' => $apiRequest,
+            'api_request' => $this->redactApiRequest($apiRequest),
             'raw_response' => $response->json(),
-            'tbk_user' => $tbkUser,
+            'tbk_user' => $this->maskTbkUser($tbkUser),
         ]);
 
         $this->event->dispatch(new TransactionDetailedCharged($apiRequest, $transaction));

@@ -105,22 +105,22 @@ class FailureRedirectControllerTest extends TestCase
         $this->post('confirm', [
             'token_ws' => 'foo',
             'TBK_TOKEN' => 'bar',
-            'TBK_ID_SESSION' => 'baz',
+            'TBK_ID_SESION' => 'baz',
             'TBK_ORDEN_COMPRA' => 'quz',
             'token' => 'cugar',
             'url_webpay' => 'something'
         ])
             ->assertRedirect(
-                'http://localhost/confirm?token_ws=foo&TBK_TOKEN=bar&TBK_ID_SESSION=baz&TBK_ORDEN_COMPRA=quz&token=cugar&url_webpay=something'
+                'http://localhost/confirm?token_ws=foo&TBK_TOKEN=bar&TBK_ID_SESION=baz&TBK_ORDEN_COMPRA=quz&token=cugar&url_webpay=something'
             );
 
         $this->post('confirm', [
             'token_ws' => 'foo',
             'bar' => 'bar',
-            'TBK_ID_SESSION' => 'baz',
+            'TBK_ID_SESION' => 'baz',
             'quz' => 'quz',
         ])
-            ->assertRedirect('http://localhost/confirm?token_ws=foo&TBK_ID_SESSION=baz');
+            ->assertRedirect('http://localhost/confirm?token_ws=foo&TBK_ID_SESION=baz');
     }
 
     #[DefineEnvironment('useTestbenchMiddleware')]
