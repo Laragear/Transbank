@@ -263,6 +263,29 @@ class WebpayRequestTest extends TestCase
         $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertOk()->assertJson(['buy-order' => 'bar']);
     }
 
+    public function test_token_variants_behave_like_token_ws(): void
+    {
+        foreach (['token_ws', 'TOKEN_WS', 'token'] as $variant) {
+            Webpay::shouldReceive('commit')->once()->with('foo')->andReturn(
+                new Transaction('foo', 'bar', ['response_code' => 0, 'buy_order' => 'bar'])
+            );
+
+            $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+                return [
+                    'error' => $request->isError() ? 'true' : 'false',
+                    'successful' => $request->isSuccessful() ? 'true' : 'false',
+                    'buy-order' => $request->buyOrder(),
+                ];
+            });
+
+            $this->get("confirm?{$variant}=foo")->assertOk()->assertJson([
+                'error' => 'false',
+                'successful' => 'true',
+                'buy-order' => 'bar',
+            ]);
+        }
+    }
+
     public function test_validates_request(): void
     {
         WebpayRequest::$validate = true;
@@ -279,6 +302,23 @@ class WebpayRequestTest extends TestCase
         $this->get('confirm?token_ws=foo')->assertRedirect();
         $this->get('confirm?TBK_TOKEN=foo')->assertRedirect();
         $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertRedirect();
+    }
+
+    public function test_validates_all_token_variants(): void
+    {
+        WebpayRequest::$validate = true;
+
+        $token = Str::random(64);
+
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return 'ok';
+        });
+
+        $this->get("confirm?TOKEN_WS=$token")->assertOk();
+        $this->get("confirm?token=$token")->assertOk();
+        $this->get('confirm?TOKEN_WS=foo')->assertRedirect();
+        $this->get('confirm?token=foo')->assertRedirect();
+        $this->get('confirm?TBK_ORDEN_COMPRA=bar')->assertRedirect();
     }
 
     public function test_validates_request_and_redirects_to_custom_path(): void

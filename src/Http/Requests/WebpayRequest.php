@@ -40,7 +40,9 @@ class WebpayRequest extends FormRequest
         return [
             'TBK_TOKEN' => 'required_with:TBK_ORDEN_COMPRA|size:64',
             'TBK_ORDEN_COMPRA' => 'required_with:TBK_TOKEN',
-            'token_ws' => 'required_without:TBK_TOKEN|size:64',
+            'token_ws' => 'required_without_all:TBK_TOKEN,TOKEN_WS,token|size:64',
+            'TOKEN_WS' => 'required_without_all:TBK_TOKEN,token_ws,token|size:64',
+            'token' => 'required_without_all:TBK_TOKEN,token_ws,TOKEN_WS|size:64',
         ];
     }
 
@@ -133,7 +135,8 @@ class WebpayRequest extends FormRequest
      */
     protected function token(): string
     {
-        return $this->input('token_ws') ?? $this->input('TBK_TOKEN');
+        // The token may come in several flavors, like `ProtectTransaction` already handles.
+        return $this->input('token_ws') ?? $this->input('TOKEN_WS') ?? $this->input('token') ?? $this->input('TBK_TOKEN');
     }
 
     /**
@@ -143,8 +146,16 @@ class WebpayRequest extends FormRequest
     {
         // If the request has the `TBK_TOKEN` then the transaction is an error. It's left
         // to the developer if he wants to retrieve the transaction (but shouldn't). If
-        // the request doesn't have the `token_ws`, then the user aborted beforehand.
-        return $this->has('TBK_TOKEN') || !$this->has('token_ws');
+        // the request doesn't have any committable token, the user aborted beforehand.
+        return $this->has('TBK_TOKEN') || ! $this->hasAnyToken();
+    }
+
+    /**
+     * Check if the request has any committable token variant.
+     */
+    protected function hasAnyToken(): bool
+    {
+        return $this->has('token_ws') || $this->has('TOKEN_WS') || $this->has('token');
     }
 
     /**
