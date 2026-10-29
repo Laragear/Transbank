@@ -95,7 +95,7 @@ public function confirm(WebpayRequest $request)
 
 ### Checking the transaction status
 
-When the WebPay Request is received by your application, the `TBK_TOKEN` query parameter will be sent to your application if the transaction resulted in an error, along the `TBK_ORDEN_COMPRA` query parameter for the `buy_order` you have set for your transaction.
+When the transaction ends, Transbank returns the user to your application. A successful or declined transaction comes back with the `token_ws` parameter, while an aborted or failed transaction comes back with the `TBK_TOKEN`, `TBK_ORDEN_COMPRA` and `TBK_ID_SESION` parameters, so you can identify the transaction without committing it.
 
 Because Transbank may return an error if the transaction was aborted, failed, or invalid, it's imperative to use `isSuccessful()` before retrieving a failed transaction that may yield an exception by the library.
 
@@ -188,7 +188,9 @@ Additionally, you can enable [endpoint protection](#endpoint-protection) to only
 
 ## Transaction Failure Middleware
 
-Transbank failure responses for transactions are sent using a `POST` request. **This disrupts the session** because these come back without cookies, hence a new empty session is generated. This renders authentication useless and loses refers or intended URLs. 
+Transbank may return the user to your application with a `POST` request. These come back without cookies, which **disrupts the session** and generates a new empty one. This renders authentication useless and loses refers or intended URLs.
+
+Nowadays Transbank returns the user with a `GET` request, but the `POST` flavor may still show up, so this middleware handles it just in case.
 
 To avoid that, use the convenient `RouteRedirect` facade to create a ready-made route that handles the `POST` failure request back to your application. When this redirection is processed, your browser sends its cookies to the application, recovering the session.
 
@@ -225,6 +227,52 @@ RouteRedirect::as('confirm', 'failed-transaction');
 > [!IMPORTANT]
 >
 > If you're using you own middleware to verify CSRF/XSRF tokens, set the class in `RouteRedirect::$csrfMiddleware`.  
+
+## Local Webpay emulator
+
+When dealing with real Transbank servers on local development, you may get throttled when hitting the endpoint repeatedly. To avoid this, you can use the local Webpay emulator which offers the same, simplified functionality, which also emulates the transaction result from Transbank.
+
+To enable the emulator, simply set the `TRANSBANK_EMULATOR` to `true`. After that, the whole loop will run locally: `Webpay::create()` returns a token and a local URL, the user lands on an emulated Webpay page, and selects the result of the transaction, and the application commits/gets the result.
+
+```dotenv
+TRANSBANK_EMULATOR=true
+```
+
+The emulated page shows the amount and buy order of the transaction, and one select with four results:
+
+* `approve`: the transaction is authorized, like a card with funds.
+* `reject`: the transaction is declined, like a card without funds or rejected by the bank.
+* `abort`: the user pressed "Anular compra y volver" on the payment page.
+* `fail`: the payment form errored out mid-transaction.
+
+Once done, the user is sent back to your `return_url` exactly like Transbank does, and `Webpay::commit()` returns the matching response. Everything is answered locally, so no HTTP request leaves your application.
+
+> [!CAUTION]
+>
+> Trying to enable the emulator on _production_ will throw an Exception.
+
+### Return parameters
+
+By default, the emulator returns the user with the same parameters Transbank does, which we verified against the integration environment:
+
+| Result    | Return                                                         | Commit                        |
+|-----------|----------------------------------------------------------------|-------------------------------|
+| `approve` | `GET` with `token_ws`                                          | Authorized, `response_code` 0 |
+| `reject`  | `GET` with `token_ws`                                          | Failed, `response_code` -1    |
+| `abort`   | `GET` with `TBK_TOKEN`, `TBK_ORDEN_COMPRA` and `TBK_ID_SESION` | Refused with a `422`          |
+| `fail`    | `GET` with `token_ws` plus the `TBK_*` parameters              | Refused with a `422`          |
+
+Keep in mind Transbank documents these returns inconsistently, and the real servers don't always match their own documentation. This is why the emulated page includes an optional panel to force the return variants Transbank may throw at you:
+
+* **Method**: return with `GET` or `POST`. The `POST` flavor uses an auto-submitting form, like the old Webpay flows.
+* **Token parameter**: use `token_ws`, `TOKEN_WS` or `token` as the parameter name.
+* **`TBK_*` variables**: include all, none, or let the result decide.
+
+That way you can test your return endpoint against every flavor of whatever Transbank wants to throw without a single real transaction.
+
+> [!NOTE]
+>
+> The emulator only handles the transaction endpoints. The `refund()` and `capture()` methods will return an error response.
 
 ## Events
 
@@ -465,6 +513,10 @@ return [
         'store' => env('TRANSBANK_PROTECT_CACHE'),
         'prefix' => 'transbank|token',
     ],
+    'emulator' => [
+        'enabled' => env('TRANSBANK_EMULATOR', false),
+        'path' => env('TRANSBANK_EMULATOR_PATH', 'transbank/emulator'),
+    ],
 ]
 ```
 
@@ -527,6 +579,19 @@ return [
 Disabled by default, you can further protect your endpoints using the [`transbank.protect` middleware](#middleware-endpoint-protection). Once enabled, it will save the token of every transaction created by 5 minutes, and once Transbank returns the user with the token, abort the request if it was not generated or was expired.
 
 This also handles which cache store to use and which prefix to use when storing the tokens into the cache.
+
+### Emulator
+
+```php
+return [
+    'emulator' => [
+        'enabled' => env('TRANSBANK_EMULATOR', false),
+        'path' => env('TRANSBANK_EMULATOR_PATH', 'transbank/emulator'),
+    ],
+]
+```
+
+Disabled by default. Once enabled, every request to the Transbank servers is answered locally and the user is redirected to the [emulated payment page](#local-webpay-emulator) instead. The `path` key sets the local URL where the page is served.
 
 # Licence
 
