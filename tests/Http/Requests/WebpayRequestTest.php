@@ -235,6 +235,34 @@ class WebpayRequestTest extends TestCase
         $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertOk()->assertJson(['buy-order' => 'bar']);
     }
 
+    public function test_ignores_forged_buy_order_from_successful_request(): void
+    {
+        Webpay::shouldReceive('commit')->once()->with('foo')->andReturn(
+            new Transaction('foo', 'bar', ['response_code' => 0, 'buy_order' => 'real'])
+        );
+
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return [
+                'buy-order' => $request->buyOrder()
+            ];
+        });
+
+        $this->get('confirm?token_ws=foo&TBK_ORDEN_COMPRA=attacker')->assertOk()->assertJson(['buy-order' => 'real']);
+    }
+
+    public function test_returns_client_buy_order_from_failed_response_without_committing(): void
+    {
+        Webpay::shouldReceive('commit')->never();
+
+        $this->app->make('router')->get('confirm', function (WebpayRequest $request) {
+            return [
+                'buy-order' => $request->buyOrder()
+            ];
+        });
+
+        $this->get('confirm?TBK_TOKEN=foo&TBK_ORDEN_COMPRA=bar')->assertOk()->assertJson(['buy-order' => 'bar']);
+    }
+
     public function test_validates_request(): void
     {
         WebpayRequest::$validate = true;

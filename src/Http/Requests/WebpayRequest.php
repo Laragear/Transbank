@@ -160,6 +160,9 @@ class WebpayRequest extends FormRequest
      */
     public function buyOrder(): string
     {
-        return $this->input('TBK_ORDEN_COMPRA') ?? $this->transaction()->get('buy_order', '');
+        // On success-shaped requests the client-supplied `TBK_ORDEN_COMPRA` cannot be trusted; the committed transaction is the only safe source.
+        return $this->isError()
+            ? (string) $this->input('TBK_ORDEN_COMPRA', '')
+            : (string) $this->transaction()->get('buy_order', '');
     }
 }

@@ -73,7 +73,7 @@ Verification: Visiting the payment confirmation URL directly without `token_ws` 
 
 ## Detecting aborted transactions without committing
 
-Check `$request->isError()` before attempting to retrieve `$request->transaction()` in controllers, because aborted transactions provide `TBK_TOKEN` and `TBK_ORDEN_COMPRA` but lack a committable `token_ws`, and calling commit on them throws an exception.
+Check `$request->isError()` before attempting to retrieve `$request->transaction()` in controllers, because aborted transactions provide `TBK_TOKEN` and `TBK_ORDEN_COMPRA` but lack a committable `token_ws`, and calling commit on them throws an exception. On these failure-shaped requests, `buyOrder()` can only return the client-supplied `TBK_ORDEN_COMPRA`, so verify it against your application's own records before writing anything.
 
 ```php
 namespace App\Http\Controllers;

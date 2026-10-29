@@ -76,7 +76,7 @@ public function pay()
 
 Once done, you can confirm the payment using the convenient `WebpayRequest` in your controller.
 
-This request object exposes the `isSuccessful()` method to check if the transaction was successful or failed by any reason, and the `buyOrder()` method to retrieve the buy order set by your application. 
+This request object exposes the `isSuccessful()` method to check if the transaction was successful or failed by any reason, and the `buyOrder()` method to retrieve the buy order of the committed transaction, which is always safer than trusting what the request carries.
 
 ```php
 use Laragear\Transbank\Http\Requests\WebpayRequest;
@@ -113,7 +113,8 @@ public function confirm(WebpayRequest $request)
         // ...
     };
     
-    // Assume the transaction failed.
+    // Assume the transaction failed. The buy order is client-supplied here, so
+    // verify it matches a checkout in your own records before writing anything.
     Checkout::whereKey($request->buyOrder())->update([
         'failed_at' => now()
     ]);
@@ -121,6 +122,10 @@ public function confirm(WebpayRequest $request)
     // ...
 }
 ```
+
+> [!IMPORTANT]
+> 
+> When the transaction fails or is aborted, the `TBK_ORDEN_COMPRA` and `TBK_ID_SESION` parameters come from the client (the browser making the request), not from Transbank. Anyone can hit your return URL with arbitrary values. On success-shaped requests `buyOrder()` uses the committed transaction, but on failures it can only return `TBK_ORDEN_COMPRA` as-is, so always verify it against your application's own records before writing anything.
 
 > [!IMPORTANT]
 > 
