@@ -68,6 +68,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Transbank emulator
+    |--------------------------------------------------------------------------
+    |
+    | When enabled, all requests to the Transbank servers are answered locally
+    | through an emulated payment page the user is redirected to. The result
+    | of the transaction can be selected manually in the emulated payment.
+    |
+    | (!) Never enable this in production.
+    |
+    */
+
+    'emulator' => [
+        'enabled' => env('TRANSBANK_EMULATOR', false),
+        'path' => 'transbank/emulator',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Transbank response fix
     |--------------------------------------------------------------------------
     |

@@ -12,6 +12,7 @@ use Laragear\Transbank\Services\Oneclick;
 use Laragear\Transbank\Services\Webpay;
 use Laragear\Transbank\TransbankServiceProvider;
 use Orchestra\Testbench\Attributes\DefineEnvironment;
+use RuntimeException;
 
 class ServiceProviderTest extends TestCase
 {
@@ -45,6 +46,45 @@ class ServiceProviderTest extends TestCase
         $this->assertHasMiddlewareAlias('transbank.protect', ProtectTransaction::class);
     }
 
+    public function test_doesnt_register_emulator_routes_by_default(): void
+    {
+        $routes = $this->app->make('router')->getRoutes();
+
+        static::assertFalse($routes->hasNamedRoute('transbank.emulator.show'));
+        static::assertFalse($routes->hasNamedRoute('transbank.emulator.submit'));
+    }
+
+    protected function enablesEmulator($app): void
+    {
+        $app->make('config')->set('transbank.emulator.enabled', true);
+    }
+
+    #[DefineEnvironment('enablesEmulator')]
+    public function test_registers_emulator_routes_when_enabled(): void
+    {
+        $routes = $this->app->make('router')->getRoutes();
+
+        static::assertTrue($routes->hasNamedRoute('transbank.emulator.show'));
+        static::assertTrue($routes->hasNamedRoute('transbank.emulator.submit'));
+    }
+
+    protected function enablesEmulatorInProduction($app): void
+    {
+        $app['env'] = 'production';
+        $app->make('config')->set('app.env', 'production');
+    }
+
+    #[DefineEnvironment('enablesEmulatorInProduction')]
+    public function test_throws_when_emulator_is_registered_in_production(): void
+    {
+        $this->app->make('config')->set('transbank.emulator.enabled', true);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Transbank Emulator should be disabled on production.');
+
+        $this->app->register(new TransbankServiceProvider($this->app), force: true);
+    }
+
     public function test_doesnt_registers_listener_when_protection_is_disabled_by_default(): void
     {
         $listeners = $this->app->make('events')->getRawListeners(TransactionCreated::class);
@@ -52,7 +92,7 @@ class ServiceProviderTest extends TestCase
         static::assertArrayNotHasKey(TransactionCreated::class, $listeners);
     }
 
-    protected function enablesProtection($app)
+    protected function enablesProtection($app): void
     {
         $app->make('config')->set('transbank.protect.enabled', true);
     }
