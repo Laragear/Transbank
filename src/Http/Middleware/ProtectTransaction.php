@@ -5,7 +5,6 @@ namespace Laragear\Transbank\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use function abort_unless;
-use function array_values;
 use function cache;
 use function config;
 
@@ -30,9 +29,10 @@ class ProtectTransaction
            return false;
         }
 
-        [$enabled, $store, $prefix] = array_values(config('transbank.protect'));
+        $protect = config('transbank.protect');
 
-        return !$enabled || cache()->store($store)->pull($prefix.'|'.$token);
+        return ! ($protect['enabled'] ?? false)
+            || cache()->store($protect['store'] ?? null)->pull(($protect['prefix'] ?? 'transbank|token').'|'.$token);
     }
 
     /**
