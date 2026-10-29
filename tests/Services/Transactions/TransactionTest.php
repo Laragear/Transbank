@@ -132,6 +132,13 @@ class TransactionTest extends PHPUnitTestCase
         ]);
 
         static::assertFalse($transaction->isSuccessful());
+
+        $transaction = new Transaction('foo', 'bar', [
+            'TBK_ID_SESION' => 'test',
+            'TBK_ORDEN_COMPRA' => 'test'
+        ]);
+
+        static::assertFalse($transaction->isSuccessful());
     }
 
     public static function providesCreditCardNumber(): array

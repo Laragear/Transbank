@@ -33,8 +33,9 @@ class Transaction extends Fluent
      */
     public function isSuccessful(): bool
     {
-        // If TBK data has been received, immediately bail out.
-        if (isset($this->TBK_ID_SESSION, $this->TBK_ORDEN_COMPRA)) {
+        // If TBK data has been received, immediately bail out. Transbank sends
+        // the session id as TBK_ID_SESION, but older code used TBK_ID_SESSION.
+        if ((isset($this->TBK_ID_SESSION) || isset($this->TBK_ID_SESION)) && isset($this->TBK_ORDEN_COMPRA)) {
             return false;
         }
 
