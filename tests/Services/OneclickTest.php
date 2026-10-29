@@ -26,6 +26,7 @@ use Laragear\Transbank\Services\Transactions\Transaction;
 use Laragear\Transbank\Services\Transactions\TransactionDetailed;
 use Psr\Log\LoggerInterface;
 use Tests\TestCase;
+use function substr;
 use function ucfirst;
 
 class OneclickTest extends TestCase
@@ -157,7 +158,7 @@ class OneclickTest extends TestCase
         $logger->expects('debug')->withArgs(
             static function (string $action, array $context) use ($token): bool {
                 static::assertEquals('Finishing registration', $action);
-                static::assertEquals($token, $context['tbkUser']);
+                static::assertEquals(substr($token, 0, 8).'...', $context['tbkUser']);
                 static::assertEquals('oneclick', $context['api_request']->service);
                 static::assertEquals('confirm', $context['api_request']->action);
 
@@ -168,7 +169,7 @@ class OneclickTest extends TestCase
         $logger->expects('debug')->withArgs(
             static function (string $action, array $context) use ($token, $transbankResponse): bool {
                 static::assertEquals('Response received', $action);
-                static::assertEquals($token, $context['token']);
+                static::assertEquals(substr($token, 0, 8).'...', $context['token']);
                 static::assertEquals('oneclick', $context['api_request']->service);
                 static::assertEquals('confirm', $context['api_request']->action);
                 static::assertEquals($transbankResponse, $context['raw_response']);
@@ -241,7 +242,7 @@ class OneclickTest extends TestCase
                 static::assertEquals('Deleting registration', $action);
                 static::assertEquals('oneclick', $context['api_request']->service);
                 static::assertEquals('delete', $context['api_request']->action);
-                static::assertEquals($tbkUser, $context['api_request']['tbk_user']);
+                static::assertEquals(substr($tbkUser, 0, 8).'...', $context['api_request']['tbk_user']);
                 static::assertEquals($username, $context['api_request']['username']);
 
                 return true;
@@ -346,7 +347,7 @@ class OneclickTest extends TestCase
         $logger->expects('debug')->withArgs(
             static function (string $action, array $context) use ($tbkUser): bool {
                 static::assertEquals('Committing transaction', $action);
-                static::assertEquals($tbkUser, $context['tbk_user']);
+                static::assertEquals(substr($tbkUser, 0, 8).'...', $context['tbk_user']);
                 static::assertEquals('oneclick', $context['api_request']->service);
                 static::assertEquals('commit', $context['api_request']->action);
 
@@ -357,7 +358,7 @@ class OneclickTest extends TestCase
         $logger->expects('debug')->withArgs(
             static function (string $action, array $context) use ($transbankResponse, $tbkUser): bool {
                 static::assertEquals('Response received', $action);
-                static::assertEquals($tbkUser, $context['tbk_user']);
+                static::assertEquals(substr($tbkUser, 0, 8).'...', $context['tbk_user']);
                 static::assertEquals('oneclick', $context['api_request']->service);
                 static::assertEquals('commit', $context['api_request']->action);
                 static::assertEquals($transbankResponse, $context['raw_response']);
@@ -394,6 +395,76 @@ class OneclickTest extends TestCase
                 return true;
             },
         );
+    }
+
+    public function test_commit_never_logs_raw_tbk_user(): void
+    {
+        $tbkUser = 'b6bd6ba3-e718-4107-9386-d2b099a8dd42';
+        $username = 'juanperez';
+        $buyOrder = 'test_buy_order';
+        $details = [
+            [
+                'commerce_code' => Oneclick::INTEGRATION_CHILD_KEY,
+                'buy_order' => "child-$buyOrder",
+                'amount' => 1000,
+                'installments_number' => 1,
+            ]
+        ];
+
+        $transbankResponse = [
+            'buy_order' => $buyOrder,
+            'card_detail' => [
+                'card_number' => '6623',
+            ],
+            'accounting_date' => '0324',
+            'transaction_date' => '2021-01-24T22:16:48.562Z',
+            'details' => [
+                [
+                    'amount' => 10000,
+                    'status' => 'AUTHORIZED',
+                    'authorization_code' => '1213',
+                    'payment_type_code' => 'VN',
+                    'response_code' => 0,
+                    'installments_number' => 0,
+                    'commerce_code' => Oneclick::INTEGRATION_CHILD_KEY,
+                    'buy_order' => "child-$buyOrder",
+                ]
+            ],
+        ];
+
+        $this->mock(Client::class)
+            ->expects('send')
+            ->withArgs(
+                static function ($method, $endpoint, $request) use ($tbkUser): bool {
+                    // The wire-format request still carries the raw credential.
+                    static::assertEquals($tbkUser, $request['tbk_user']);
+
+                    return true;
+                },
+            )
+            ->andReturn($this->serverResponse($transbankResponse));
+
+        $contexts = [];
+
+        $logger = $this->mock(LoggerInterface::class);
+
+        $logger->expects('debug')->withArgs(
+            static function (string $action, array $context) use (&$contexts): bool {
+                $contexts[] = $context;
+
+                return true;
+            },
+        )->times(2);
+
+        $this->app->make(Oneclick::class)->commit($tbkUser, $username, $buyOrder, $details);
+
+        static::assertCount(2, $contexts);
+
+        foreach ($contexts as $context) {
+            static::assertNotContains($tbkUser, $context);
+            static::assertNotSame($tbkUser, $context['api_request']['tbk_user']);
+            static::assertEquals(substr($tbkUser, 0, 8).'...', $context['api_request']['tbk_user']);
+        }
     }
 
     public function test_status(): void
