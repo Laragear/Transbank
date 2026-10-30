@@ -23,3 +23,7 @@ In Livewire components receiving Transbank returns, use `Laragear\Transbank\Live
 ## Security and Endpoint Protection
 
 To safeguard return routes against token tampering and replay attacks, apply the `'transbank.protect'` middleware alias (`Laragear\Transbank\Http\Middleware\ProtectTransaction`) and enable token caching in `config/transbank.php`. For route protection and environment configuration, use `laragear-transbank-protect` skill.
+
+## Local Webpay Emulator
+
+To develop and test Webpay checkouts offline without hitting Transbank integration servers or facing rate limits, enable the local emulator with `TRANSBANK_EMULATOR=true`. For local outcome simulation (approve, reject, abort, fail), return parameter variations, and test assertions, use `laragear-transbank-emulator` skill.
