@@ -35,7 +35,7 @@ class Webpay
         self::ACTION_CREATE =>  ['post', self::ENDPOINT_BASE . 'transactions'],
         self::ACTION_COMMIT =>  ['put', self::ENDPOINT_BASE . 'transactions/{token}'],
         self::ACTION_STATUS =>  ['get', self::ENDPOINT_BASE . 'transactions/{token}'],
-        self::ACTION_REFUND =>  ['put', self::ENDPOINT_BASE . 'transactions/{token}/refunds'],
+        self::ACTION_REFUND =>  ['post', self::ENDPOINT_BASE . 'transactions/{token}/refunds'],
         self::ACTION_CAPTURE => ['put', self::ENDPOINT_BASE . 'transactions/{token}/capture'],
     ];
 
@@ -109,6 +109,14 @@ class Webpay
 
     /**
      * Refunds partially or totally a given credit-card charge amount.
+     *
+     * If this call throws a `Laragear\Transbank\Exceptions\NetworkException` (e.g., due to a
+     * read timeout), the outcome is unknown: the refund may have been applied on Transbank's
+     * side. Check the transaction status or balance before retrying the refund.
+     *
+     * @throws \Laragear\Transbank\Exceptions\NetworkException
+     * @throws \Laragear\Transbank\Exceptions\ClientException
+     * @throws \Laragear\Transbank\Exceptions\ServerException
      */
     public function refund(string $token, int|float $amount): Transactions\Transaction
     {
