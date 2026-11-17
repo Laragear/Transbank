@@ -193,4 +193,80 @@ class TransactionTest extends PHPUnitTestCase
         static::assertJsonStringEqualsJsonString($jsonString, $transaction->toJson());
         static::assertEquals($jsonString, json_encode($transaction));
     }
+
+    public function test_refund_with_reversed_type_is_successful(): void
+    {
+        $transaction = new Transaction('webpay', 'refund', [
+            'type' => 'REVERSED',
+        ]);
+
+        static::assertTrue($transaction->isSuccessful());
+        static::assertFalse($transaction->isNotSuccessful());
+    }
+
+    public function test_refund_with_nullified_type_and_response_code_is_successful(): void
+    {
+        $transaction = new Transaction('webpay', 'refund', [
+            'type' => 'NULLIFIED',
+            'balance' => 0,
+            'authorization_code' => '121696',
+            'response_code' => 0,
+            'authorization_date' => '2026-11-17T05:37:56.319Z',
+            'nullified_amount' => 115203,
+        ]);
+
+        static::assertTrue($transaction->isSuccessful());
+        static::assertFalse($transaction->isNotSuccessful());
+    }
+
+    public function test_refund_with_nullified_type_without_response_code_is_successful(): void
+    {
+        $transaction = new Transaction('webpay', 'refund', [
+            'type' => 'NULLIFIED',
+            'balance' => 0,
+            'nullified_amount' => 115203,
+        ]);
+
+        static::assertTrue($transaction->isSuccessful());
+        static::assertFalse($transaction->isNotSuccessful());
+    }
+
+    public function test_refund_with_error_message_is_not_successful(): void
+    {
+        $transaction = new Transaction('webpay', 'refund', [
+            'error_message' => 'Amount to refund is bigger than authorized',
+        ]);
+
+        static::assertFalse($transaction->isSuccessful());
+        static::assertTrue($transaction->isNotSuccessful());
+        static::assertTrue($transaction->hasFailed());
+    }
+
+    public function test_refund_with_already_reversed_error_is_not_successful(): void
+    {
+        $transaction = new Transaction('webpay', 'refund', [
+            'error_message' => 'Transaction already REVERSED',
+        ]);
+
+        static::assertFalse($transaction->isSuccessful());
+        static::assertTrue($transaction->isNotSuccessful());
+    }
+
+    public function test_non_refund_action_with_reversed_type_is_not_successful(): void
+    {
+        $transaction = new Transaction('webpay', 'commit', [
+            'type' => 'REVERSED',
+        ]);
+
+        static::assertFalse($transaction->isSuccessful());
+    }
+
+    public function test_non_refund_action_with_nullified_type_is_not_successful(): void
+    {
+        $transaction = new Transaction('webpay', 'status', [
+            'type' => 'NULLIFIED',
+        ]);
+
+        static::assertFalse($transaction->isSuccessful());
+    }
 }
