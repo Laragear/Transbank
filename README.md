@@ -279,6 +279,34 @@ That way you can test your return endpoint against every flavor of whatever Tran
 >
 > The emulator only handles the transaction endpoints. The `refund()` and `capture()` methods will return an error response.
 
+## Refunding a transaction
+
+Use `Webpay::refund()` to partially or fully refund a committed payment. The returned `Transaction` object reports success via `isSuccessful()`.
+
+Transbank returns different response shapes depending on when the refund is made:
+
+- **Same-day full refund**: returns `{"type": "REVERSED"}` with no `response_code`. `isSuccessful()` returns `true`.
+- **Next-day or later refund**: returns `{"type": "NULLIFIED", "response_code": 0, "balance": 0, ...}`. `isSuccessful()` returns `true`.
+- **Failed refund**: returns `{"error_message": "..."}` (e.g., "Amount to refund is bigger than authorized" or "Transaction already REVERSED"). `isSuccessful()` returns `false`.
+
+```php
+use Laragear\Transbank\Facades\Webpay;
+
+$refund = Webpay::refund($token, $amount);
+
+if ($refund->isSuccessful()) {
+    // The refund was applied — either REVERSED (same day) or NULLIFIED (later).
+    echo 'Refund type: '.$refund->getType();
+} else {
+    // The refund was rejected by Transbank.
+    echo 'Error: '.$refund->getError_message();
+}
+```
+
+> [!IMPORTANT]
+>
+> Do not retry a refund that returned `{"type": "REVERSED"}` — it was already applied. A retry will return `{"error_message": "Transaction already REVERSED"}`.
+
 ## Events
 
 You will be able to hear all transactions started and completed. This package sends the following events:

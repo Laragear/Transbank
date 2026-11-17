@@ -110,6 +110,15 @@ class Webpay
     /**
      * Refunds partially or totally a given credit-card charge amount.
      *
+     * A full refund made on the same day as the payment answers with `{"type": "REVERSED"}`
+     * (no `response_code`). A refund on the next day or later answers with a full body that
+     * includes `{"type": "NULLIFIED", "response_code": 0, ...}`. Both responses are treated
+     * as successful by `Transaction::isSuccessful()`.
+     *
+     * If the refund fails (e.g., the amount exceeds the authorized balance or the transaction
+     * was already refunded), Transbank returns `{"error_message": "..."}` and
+     * `isSuccessful()` will return `false`.
+     *
      * If this call throws a `Laragear\Transbank\Exceptions\NetworkException` (e.g., due to a
      * read timeout), the outcome is unknown: the refund may have been applied on Transbank's
      * side. Check the transaction status or balance before retrying the refund.

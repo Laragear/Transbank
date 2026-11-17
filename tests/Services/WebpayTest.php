@@ -423,6 +423,103 @@ class WebpayTest extends TestCase
         static::assertEquals('Transaction already NULLIFIED', $response->getError_message());
     }
 
+    public function test_refund_returns_successful_on_reversed_type(): void
+    {
+        $token = '01abd1b55849b31783b352ebcb6adaf1f7d0dab7476aac499568c01585c5e289';
+
+        // When Transbank reverses a charge refunded on the same day, the answer
+        // is a bare body with no `response_code`: {"type": "REVERSED"}.
+        $transbankResponse = [
+            'type' => 'REVERSED',
+        ];
+
+        $this->mock(Client::class)
+            ->expects('send')
+            ->withArgs(
+                static function ($method, $endpoint, $request) use ($token): bool {
+                    static::assertSame('post', $method);
+                    static::assertSame(
+                        "rswebpaytransaction/api/webpay/{api_version}/transactions/$token/refunds", $endpoint
+                    );
+
+                    return true;
+                }
+            )
+            ->andReturn($this->serverResponse($transbankResponse));
+
+        $response = $this->app->make(Webpay::class)->refund($token, 223975);
+
+        static::assertTrue($response->isSuccessful());
+        static::assertFalse($response->hasFailed());
+        static::assertEquals('REVERSED', $response->getType());
+    }
+
+    public function test_refund_returns_successful_on_nullified_type_with_response_code(): void
+    {
+        $token = '01abd1b55849b31783b352ebcb6adaf1f7d0dab7476aac499568c01585c5e289';
+
+        // Refunds on the next day or later answer with a full NULLIFIED body.
+        $transbankResponse = [
+            'type' => 'NULLIFIED',
+            'balance' => 0,
+            'authorization_code' => '121696',
+            'response_code' => 0,
+            'authorization_date' => '2026-11-17T05:37:56.319Z',
+            'nullified_amount' => 115203,
+        ];
+
+        $this->mock(Client::class)
+            ->expects('send')
+            ->withArgs(
+                static function ($method, $endpoint, $request) use ($token): bool {
+                    static::assertSame('post', $method);
+                    static::assertSame(
+                        "rswebpaytransaction/api/webpay/{api_version}/transactions/$token/refunds", $endpoint
+                    );
+
+                    return true;
+                }
+            )
+            ->andReturn($this->serverResponse($transbankResponse));
+
+        $response = $this->app->make(Webpay::class)->refund($token, 115203);
+
+        static::assertTrue($response->isSuccessful());
+        static::assertFalse($response->hasFailed());
+        static::assertEquals('NULLIFIED', $response->getType());
+        static::assertEquals(115203, $response->getNullifiedAmount());
+    }
+
+    public function test_refund_returns_unsuccessful_on_already_reversed_error(): void
+    {
+        $token = '01abd1b55849b31783b352ebcb6adaf1f7d0dab7476aac499568c01585c5e289';
+
+        // A retry after a successful REVERSED refund returns an error.
+        $transbankResponse = [
+            'error_message' => 'Transaction already REVERSED',
+        ];
+
+        $this->mock(Client::class)
+            ->expects('send')
+            ->withArgs(
+                static function ($method, $endpoint, $request) use ($token): bool {
+                    static::assertSame('post', $method);
+                    static::assertSame(
+                        "rswebpaytransaction/api/webpay/{api_version}/transactions/$token/refunds", $endpoint
+                    );
+
+                    return true;
+                }
+            )
+            ->andReturn($this->serverResponse($transbankResponse));
+
+        $response = $this->app->make(Webpay::class)->refund($token, 223975);
+
+        static::assertFalse($response->isSuccessful());
+        static::assertTrue($response->hasFailed());
+        static::assertEquals('Transaction already REVERSED', $response->getError_message());
+    }
+
     public function test_capture(): void
     {
         $buyOrder = 'test_buy_order';

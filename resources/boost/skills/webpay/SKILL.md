@@ -119,6 +119,13 @@ Verification: Webpay only executes the transaction commit if the condition evalu
 
 Use `Webpay::refund()` or `Webpay::capture()` via the `Webpay` facade instead of manual HTTP requests, because the service resolves the correct REST endpoints, logs transaction diagnostics, and fires package events.
 
+When refunding, Transbank returns different response shapes depending on when the refund is made:
+- **Same-day full refund**: returns `{"type": "REVERSED"}` with no `response_code`. `isSuccessful()` returns `true`.
+- **Next-day or later refund**: returns `{"type": "NULLIFIED", "response_code": 0, "balance": 0, ...}`. `isSuccessful()` returns `true`.
+- **Failed refund**: returns `{"error_message": "..."}` (e.g., "Amount to refund is bigger than authorized" or "Transaction already REVERSED"). `isSuccessful()` returns `false`.
+
+Always check `$transaction->isSuccessful()` after calling `refund()` — both REVERSED and NULLIFIED responses are treated as successful.
+
 ```php
 namespace App\Services;
 
@@ -131,6 +138,8 @@ class WebpayManagementService
     public function refundOrder(Order $order, float $amount): Transaction
     {
         // Refund partially or totally a committed payment.
+        // Same-day refunds return {"type": "REVERSED"}; later refunds return {"type": "NULLIFIED", ...}.
+        // Both are treated as successful by isSuccessful().
         return Webpay::refund($order->payment_token, $amount);
     }
 
