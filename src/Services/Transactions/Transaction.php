@@ -39,7 +39,9 @@ class Transaction extends Fluent
             return false;
         }
 
-        // If there is a native response code, return it.
+        $success = false;
+
+        // If there is a native response code, check it.
         if (isset($this->response_code)) {
             $success = $this->response_code === 0;
 
@@ -52,23 +54,18 @@ class Transaction extends Fluent
                     static::STATUS_CAPTURED
                 ]);
             }
-
-            return $success;
         }
-
         // When Transbank reverses a charge refunded on the same day, the answer is a bare
         // body with no `response_code`: {"type": "REVERSED"}. Treat it as successful so
         // consumers don't mistake an applied refund for a rejection. Scope this to the
         // refund action only, and only when there is no `error_message`.
-        if ($this->action === 'refund' && ! isset($this->error_message)) {
+        elseif ($this->action === 'refund' && ! isset($this->error_message)) {
             $type = $this->get('type');
 
-            if (in_array($type, [static::STATUS_REVERSED, static::STATUS_NULLIFIED], true)) {
-                return true;
-            }
+            $success = in_array($type, [static::STATUS_REVERSED, static::STATUS_NULLIFIED], true);
         }
 
-        return false;
+        return $success;
     }
 
     /**
