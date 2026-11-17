@@ -319,7 +319,7 @@ class WebpayTest extends TestCase
             ->expects('send')
             ->withArgs(
                 static function($method, $endpoint, $request) use ($nullifiedAmount, $token): bool {
-                    static::assertSame('put', $method);
+                    static::assertSame('post', $method);
                     static::assertSame(
                         "rswebpaytransaction/api/webpay/{api_version}/transactions/$token/refunds", $endpoint
                     );
@@ -362,6 +362,65 @@ class WebpayTest extends TestCase
                 return true;
             }
         );
+    }
+
+    public function test_refund_returns_unsuccessful_on_error_response(): void
+    {
+        $token = '01abd1b55849b31783b352ebcb6adaf1f7d0dab7476aac499568c01585c5e289';
+
+        // Transbank error responses only have `error_message`, no `response_code`.
+        $transbankResponse = [
+            'error_message' => 'Amount to refund is bigger than authorized',
+        ];
+
+        $this->mock(Client::class)
+            ->expects('send')
+            ->withArgs(
+                static function ($method, $endpoint, $request) use ($token): bool {
+                    static::assertSame('post', $method);
+                    static::assertSame(
+                        "rswebpaytransaction/api/webpay/{api_version}/transactions/$token/refunds", $endpoint
+                    );
+
+                    return true;
+                }
+            )
+            ->andReturn($this->serverResponse($transbankResponse));
+
+        $response = $this->app->make(Webpay::class)->refund($token, 100000);
+
+        static::assertFalse($response->isSuccessful());
+        static::assertTrue($response->hasFailed());
+        static::assertEquals('Amount to refund is bigger than authorized', $response->getError_message());
+    }
+
+    public function test_refund_returns_unsuccessful_on_already_nullified(): void
+    {
+        $token = '01abd1b55849b31783b352ebcb6adaf1f7d0dab7476aac499568c01585c5e289';
+
+        $transbankResponse = [
+            'error_message' => 'Transaction already NULLIFIED',
+        ];
+
+        $this->mock(Client::class)
+            ->expects('send')
+            ->withArgs(
+                static function ($method, $endpoint, $request) use ($token): bool {
+                    static::assertSame('post', $method);
+                    static::assertSame(
+                        "rswebpaytransaction/api/webpay/{api_version}/transactions/$token/refunds", $endpoint
+                    );
+
+                    return true;
+                }
+            )
+            ->andReturn($this->serverResponse($transbankResponse));
+
+        $response = $this->app->make(Webpay::class)->refund($token, 50000);
+
+        static::assertFalse($response->isSuccessful());
+        static::assertTrue($response->hasFailed());
+        static::assertEquals('Transaction already NULLIFIED', $response->getError_message());
     }
 
     public function test_capture(): void
