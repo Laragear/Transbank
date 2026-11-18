@@ -7,14 +7,16 @@ description: "Certify Webpay integration: harvest the nine transaction tokens Tr
 
 Transbank certification for Webpay Plus requires nine transaction tokens, one per scenario, minted against the **real** integration environment (`webpay3gint.transbank.cl`, commerce `597055555532`, the package's default integration credentials). This skill harvests them by driving the live hosted form with a proven Pest reference test, records each token **before and while** the form is driven, and produces one regenerable table the user copy-pastes into Transbank's integration certification form.
 
-## Reading the certification checkpoint
+## Keeping the certification table
 
-Use `INTEGRATION.md` at the **project root** as the constant checkpoint instead of carrying the certification state in the conversation, because it holds the fixed matrix (the nine scenarios with their cards and the commit evidence each must produce) and the results table with the tokens collected so far.
+Use `INTEGRATION.md` at the **application root** as the constant checkpoint instead of carrying the certification state in the conversation, because it is the deliverable Transbank certification consumes. The harvest's afterAll hook creates and updates it from the ledger, and it holds **only the table** — one row per harvested scenario, with no headings, explanations, assertions or any other text:
 
-- Read it before anything else, and hold every run against it: run only the nine scenarios of the matrix, never add, drop or invent scenarios, and never report a token the run did not produce and record. Extra tokens are noise.
-- After a run, update the results table in `INTEGRATION.md` (token, buy order, amount, outcome, commit evidence, collection timestamp) and report that same table to the user.
+| Scenario | Token | Buy order | Amount | Card | Outcome | Commit | Collected |
 
-Verification: `INTEGRATION.md` lists exactly nine scenarios, and every reported row maps to one of them.
+- The fixed nine-scenario matrix (how each token is produced, and the evidence each row must hold) is the table in **Gathering each token by scenario** below. Run only those scenarios; never add, drop or invent scenarios, and never report a token the run did not produce and record. Extra tokens are noise.
+- After a run, read the table from `INTEGRATION.md` and report it verbatim to the user.
+
+Verification: `INTEGRATION.md` contains only the markdown table, with exactly one row per harvested scenario and no other text.
 
 ## Incorporating the proven reference test
 
@@ -45,7 +47,7 @@ XDEBUG_MODE=off PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/home/sail/php-conf.d
 - A single wedged scenario fails its own expectation with diagnostics. Re-run only that scenario, serially: same env prefix with `timeout 900 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php --filter=timeout` (substitute the scenario). The ledger keyed-merges, so a partial re-run updates only its own scenario rows.
 - Never trigger this skill from routine package usage. It runs on explicit certification requests only.
 
-Verification: `tests/Browser/Integration/tokens.json` gains one key per harvested scenario, and `TRANSACTION_TOKENS.md` renders at the application base path.
+Verification: `tests/Browser/Integration/tokens.json` gains one key per harvested scenario, and `INTEGRATION.md` renders at the application base path.
 
 ## Gathering each token by scenario
 
@@ -124,9 +126,7 @@ Verification: declines surface only through `commit()`, and both refund answers 
 
 ## Reporting the deliverable
 
-Report the table to the user with one row per scenario and update the results table in the root `INTEGRATION.md`, instead of leaving the tokens only in the files, because the user copy-pastes these token values into Transbank's integration certification form. The run leaves `tokens.json` (keyed per scenario, regenerable and mergeable) and `TRANSACTION_TOKENS.md` at the application base path.
-
-| Scenario | Token | Buy order | Amount | Card | Outcome | Commit | Collected |
+Report the table from `INTEGRATION.md` at the application root verbatim to the user, instead of leaving the tokens only in the files, because the user copy-pastes these token values into Transbank's integration certification form. The run leaves `tokens.json` (keyed per scenario, regenerable and mergeable) and the `INTEGRATION.md` table at the application base path.
 
 If any scenario failed, report the ones harvested, the exact failure diagnostics of the rest, and offer to re-run only the failed scenarios.
 

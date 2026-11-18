@@ -16,10 +16,10 @@
  *
  * Each scenario records the verbatim Webpay token + context into
  * tests/Browser/Integration/tokens.json; the afterAll hook renders
- * TRANSACTION_TOKENS.md at the application base path. The certification
- * matrix and the current token ledger live in INTEGRATION.md at the
- * project root; the driving knowledge lives in the webpay-integration
- * skill (resources/boost/skills/webpay-integration/SKILL.md).
+ * INTEGRATION.md at the application base path: ONLY the table, one row per
+ * harvested scenario. The certification matrix and the driving knowledge
+ * live in the webpay-integration skill
+ * (resources/boost/skills/webpay-integration/SKILL.md).
  *
  * ------------------------------------------------------------------
  * APPLICATION ANCHORS — adapt these when incorporating into an app:
@@ -77,7 +77,7 @@ define('WEBPAY_BANK_CLAVE', '123');
 
 /**
  * Scenario keys in the order they must appear in tokens.json and the
- * rendered TRANSACTION_TOKENS.md.
+ * rendered INTEGRATION.md table.
  */
 define('WEBPAY_TOKEN_SCENARIOS', [
     'credit-approved',
@@ -90,12 +90,6 @@ define('WEBPAY_TOKEN_SCENARIOS', [
     'fully-refunded',
     'timeout-from-form',
 ]);
-
-/**
- * The exact command that runs the live harvest, rendered into the deliverable.
- */
-define('WEBPAY_TOKENS_RUN_COMMAND', 'XDEBUG_MODE=off PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/home/sail/php-conf.d '
-    .'WEBPAY_INTEGRATION=true TRANSBANK_EMULATOR=false timeout 1200 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php');
 
 afterAll(function () {
     webpayTokensRender();
@@ -180,61 +174,49 @@ function webpayTokensReturnUrl(?string $set = null): string
 }
 
 /**
- * Regenerates TRANSACTION_TOKENS.md at the application base path from the
- * tokens ledger: header (environment, date, re-run command), the proven
- * test-cards table, the annotations section and one section per scenario
- * with the verbatim token. Called from the afterAll hook.
+ * Renders INTEGRATION.md at the application base path from the tokens
+ * ledger: ONLY the table, one row per harvested scenario in
+ * WEBPAY_TOKEN_SCENARIOS order. No headings, explanations or annotations —
+ * this file is the certification deliverable the user copy-pastes into
+ * Transbank's integration form. Called from the afterAll hook.
  */
 function webpayTokensRender(): void
 {
     $tokens = webpayTokensLoad();
 
     $lines = [
-        '# Webpay integration transaction tokens',
-        '',
-        '- Environment: real Transbank integration (`webpay3gint.transbank.cl`, commerce `597055555532`, emulator OFF)',
-        '- Generated: '.now()->toIso8601String(),
-        '- Re-run command: `'.WEBPAY_TOKENS_RUN_COMMAND.'` (serial, never `--parallel`; timeout-only re-run: same env prefix with `timeout 900 … --filter=timeout`)',
-        '',
-        '## Test cards',
-        '',
-        '| Outcome | Number | CVV | Expiry |',
-        '| --- | --- | --- | --- |',
-        '| Approved credit (VISA) | `4051 8856 0044 6623` | `123` | `12/28` |',
-        '| Declined credit (Mastercard) | `5186 0595 5959 0568` | `123` | `12/28` |',
-        '| Approved debit (Redcompra) | `4051 8842 3993 7763` | — | — |',
-        '| Declined debit | `5186 0085 4123 3829` | — | — |',
-        '',
-        'Bank authentication (test issuer, every journey): RUT `11.111.111-1`, clave `123`, option **Aceptar** (`TSY`) + Continuar.',
+        '| Scenario | Token | Buy order | Amount | Card | Outcome | Commit | Collected |',
+        '| --- | --- | --- | --- | --- | --- | --- | --- |',
     ];
 
-    $notes = $tokens['notes'] ?? [];
-
-    if ($notes !== []) {
-        $lines[] = '';
-        $lines[] = '## Annotations';
-        $lines[] = '';
-
-        foreach ($notes as $key => $text) {
-            $lines[] = "- **{$key}**: {$text}";
-        }
-    }
-
     foreach (WEBPAY_TOKEN_SCENARIOS as $scenario) {
-        if (! isset($tokens[$scenario]) || ! is_array($tokens[$scenario])) {
+        $data = $tokens[$scenario] ?? null;
+
+        if (! is_array($data)) {
             continue;
         }
 
-        $lines[] = '';
-        $lines[] = "## {$scenario}";
-        $lines[] = '';
+        $commit = match ($data['outcome'] ?? '') {
+            'timeout' => 'tokenless GET after '.($data['elapsed_seconds'] ?? '?').' s',
+            'cancelled' => 'TBK_TOKEN + TBK_ORDEN_COMPRA + TBK_ID_SESION',
+            default => ($data['response_code'] ?? '—').' / '.($data['status'] ?? '—')
+                .(($data['installments_number'] ?? 0) > 0 ? ', '.$data['installments_number'].' installments' : '')
+                .(isset($data['refund']) ? ' + refund '.($data['refund']['type'] ?? '?') : ''),
+        };
 
-        foreach ($tokens[$scenario] as $field => $value) {
-            $lines[] = '- '.str_replace('_', ' ', (string) $field).': `'.(is_array($value) ? json_encode($value) : $value).'`';
-        }
+        $lines[] = implode(' | ', [
+            "| `{$scenario}`",
+            "`{$data['token']}`",
+            "`{$data['buy_order']}`",
+            $data['amount'] ?? '—',
+            filled($data['card_last4'] ?? '') ? '`...'.$data['card_last4'].'`' : '—',
+            $data['outcome'],
+            $commit,
+            $data['timestamp'],
+        ]).' |';
     }
 
-    file_put_contents(base_path('TRANSACTION_TOKENS.md'), implode(PHP_EOL, $lines).PHP_EOL);
+    file_put_contents(base_path('INTEGRATION.md'), implode(PHP_EOL, $lines).PHP_EOL);
 }
 
 /*

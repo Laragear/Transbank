@@ -628,9 +628,9 @@ Disabled by default. Once enabled, every request to the Transbank servers is ans
 
 ## Integration certification
 
-When integrating this package to Transbank Webpay, Transbank's automatic certification requires 9 transaction tokens, one per scenario. The certification matrix, the test cards and the tokens collected so far are tracked in [INTEGRATION.md](INTEGRATION.md).
+When integrating this package to Transbank Webpay, Transbank's automatic certification requires 9 transaction tokens, one per scenario.
 
-For this, ask your AI to **certify Webpay integration**, or trigger the `laragear-transbank-webpay-integration` skill. Your agent will harvest the 9 required tokens against the real integration environment and report them in a table you can copy-paste to the integration certification form.
+For this, ask your AI to **certify Webpay integration**, or trigger the `laragear-transbank-webpay-integration` skill. Your agent will harvest the 9 required tokens against the real integration environment, write them as a single table to `INTEGRATION.md` at the application root, and report that table for you to copy-paste to the integration certification form.
 
 # Licence
 
