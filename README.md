@@ -626,6 +626,26 @@ return [
 
 Disabled by default. Once enabled, every request to the Transbank servers is answered locally and the user is redirected to the [emulated payment page](#local-webpay-emulator) instead. The `path` key sets the local URL where the page is served.
 
+## Integration automatic tests
+
+When integrating this package to Transbank Webpay, you will be required to set 9 tokens for specific scenarios
+
+- Approved:
+  * Credit transaction approved
+  * Installment credit transaction approved
+  * Debit transaction approved
+- Declined:
+  * Credit transaction declined
+  * Debit transaction declined
+- Cancelled:
+  * Transaction canceled from form
+  * Transaction partially refunded (the token of the transaction partially refunded)
+  * Transaction fully refunded (the token of the transaction fully refunded)
+- Timeout:
+    * Transaction timeout from form (after automatic redirection to the store/page/web)
+
+For this, you can ask your AI to _produce automatic integration certification tokens_, or trigger the `laragear-transbank-integration` skill. Your agent will create the 9 required tokens in a table you can copy-paste to the integration form.
+
 # Licence
 
 This specific package version is licensed under the terms of the [MIT License](LICENSE.md), at the time of publishing.
