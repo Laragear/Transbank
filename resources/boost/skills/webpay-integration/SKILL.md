@@ -1,23 +1,13 @@
 ---
-name: laragear-transbank-integration
+name: laragear-transbank-webpay-integration
 description: "Produce the Webpay Plus transaction tokens Transbank requires for its automatic integration certification, for any commerce code. Use when producing or refreshing Webpay Plus tokens for a Transbank integration analysis, debugging why such an analysis failed, or preparing certification evidence. Don't use for routine transaction processing or OneClick/Maestro work."
 ---
 
 # Webpay Plus Token Harvest
 
-This skill produces the transaction tokens that Transbank's automatic integration analysis requires. It drives **real** transactions against the Transbank integration environment, records every token before the form is driven, and outputs a single regenerable table keyed per scenario so individual scenarios can be re-run and merged.
+Transbank Webpay Automatic Integration form requires 9 tokens for transactions of varied states. Use this skill to automate the process of harvesting these tokens.
 
-## Credential contract
-
-The skill **never** assumes a commerce code or API secret. On invocation, it obtains them in this order:
-
-1.  **Ask the user** for the Webpay Plus commerce code (`WEBPAY_KEY`).
-2.  If the user does not have them at hand, **search the connected email** (if an email integration is available) for the credentials message Transbank sends when a commerce code is granted (sender domain `transbank.cl`; contains the commerce code and integration secret).
-3.  If neither works, stop and instruct the user to **request integration credentials from Transbank**, then re-run.
-
-These values are per-invocation inputs (environment variables or parameters). **Never write them to disk.**
-
-`WEBPAY_SECRET` is `Laragear\Transbank\Transbank::INTEGRATION_SECRET`.
+This skill drives **real** transactions against the Transbank **integration** environment, records every token before the form is driven, and outputs a single regenerable table as a file, keyed per scenario so individual scenarios can be re-run and merged.
 
 ## Workflow
 
@@ -28,7 +18,7 @@ Set the credentials in the Laravel config for the current invocation:
 ```php
 config([
     'transbank.environment' => 'integration',
-    'transbank.credentials.webpay.key' => $commerceCode,
+    'transbank.credentials.webpay.key' => \Laragear\Transbank\Services\Webpay::INTEGRATION_KEY,
     'transbank.credentials.webpay.secret' => \Laragear\Transbank\Transbank::INTEGRATION_SECRET,
 ]);
 ```
@@ -48,7 +38,7 @@ $response = \Laragear\Transbank\Facades\Webpay::create(
 
 ### 2. Define the scenario matrix
 
-For the report table, each row is a scenario. 9 are required. The default matrix covers approved credit, declined credit, approved debit, and declined debit. The user may add rows (e.g., more refund scenarios), but these 9 are mandatory.
+For the report table, each row is a scenario. 9 are required. The developer may add scenarios, but you don't add these unless explicitly said.
 
 | Scenario key | Card type | Card number | CVV | Installments | Expiry | Expected outcome |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -62,8 +52,8 @@ For the report table, each row is a scenario. 9 are required. The default matrix
 | `refund-full` | VISA | `4051 8856 0044 6623` | `123` | 0| any future| Fully refunded |
 | `timeout` | — | — | —| —| — | Timeout |
 
-- **Refunds:** You're required to create an approved payment, save that token, apply a refund, and report that token once the refund is approved.
-- **Timeout:** The timeout redirects the user from the Transbank form back to the application.
+- **`refund-*`:** You're required to create an approved payment, save that token, apply a refund, and report the token once the refund is approved.
+- **`timeout`:** The timeout redirects the user from the Transbank form back to the application. The wait must be real (10min) or until the browser redirects automatically.
 
 ### 3. Create transactions & record tokens
 
@@ -91,7 +81,7 @@ Record the token **before** driving the form. This is the only way to capture to
 Use a browser automation tool (Playwright, Puppeteer, etc.) to drive the hosted form at `$url`. Follow the journey encoded in the reference section below.
 
 - **Serial execution only.** Do not drive multiple forms concurrently — Transbank sessions are tied to a single browser context.
-- **Bounded runtimes:** Each scenario has a hard timeout of **30 seconds** from form navigation to return URL callback. If the browser does not return within this window, mark the scenario as wedged and proceed to recovery.
+- **Bounded runtimes:** Each scenario has a hard timeout of **60 seconds** from form navigation to return URL callback. If the browser does not return within this window, mark the scenario as wedged and proceed to recovery.
 - **Wedged-browser recovery:** If a scenario wedges:
   1. Kill the browser driver.
   2. Retry the scenario **once**.
@@ -111,7 +101,7 @@ $status = $transaction->get('status');
 
 - **Approved:** `response_code` = `0`, `status` = `AUTHORIZED`.
 - **Declined:** `response_code` = `-1`, `status` = `FAILED`. The form shows **no** rejection UI — only `commit()` reveals the decline.
-- **Cancelled** (user clicked "Anular compra y volver"): The return URL contains `TBK_TOKEN`, `TBK_ORDEN_COMPRA`, and `TBK_ID_SESION`. Do not commit these; record as cancelled.
+- **Canceled** (user clicked "Anular compra y volver"): The return URL contains `TBK_TOKEN`, `TBK_ORDEN_COMPRA`, and `TBK_ID_SESION`. Do not commit these; record as canceled.
 - **Expired** (form lifetime exceeded): Tokenless GET to return URL with only `TBK_ORDEN_COMPRA` and `TBK_ID_SESION` (no `TBK_TOKEN`, no `token_ws`). This fails `WebpayRequest` validation (`token_ws required_without_all`) when validation is enabled, so `commit()` is never reached. Record as expired.
 
 ### 6. Refund scenarios
@@ -137,7 +127,7 @@ Key each row by `scenario_key` so single scenarios can be re-run and merged. Whe
 ## Encoding rules
 
 - **Serial execution only.** Never parallelize form driving.
-- **Bounded runtimes.** 120-second hard timeout per scenario.
+- **Bounded runtimes.** 60-second hard timeout per scenario.
 - **Wedged-browser recovery.** Kill browser, retry once, then skip.
 - **Skip-by-default.** This skill only runs during explicit harvest invocations. Never trigger it from routine package usage.
 - **No credential persistence.** Credentials are in-memory only.
@@ -150,7 +140,8 @@ Key each row by `scenario_key` so single scenarios can be re-run and merged. Whe
 → payment-method tile "Tarjetas Crédito, Débito, Prepago" 
 → card form (card input applies a mask; typing the card number then pressing **Tab** reveals the expiry and CVV inputs — the tab-index is broken) 
 → cuotas control is a **collapsed dropdown** (open it, then click the option; options are hidden in the DOM until opened) 
-→ "Pagar" → issuer/bank authentication page (RUT `11.111.111-1`, clave `123`, then a `<select>` with **Aceptar** = value `TSY` + **Continuar**) 
+→ "Pagar" 
+→ issuer/bank authentication page (RUT `11.111.111-1`, clave `123`, then a `<select>` with **Aceptar** = value `TSY` + **Continuar**) 
 → auto-advancing interstitials (~3–5 s each)
 → GET back to the return URL.
 
