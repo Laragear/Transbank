@@ -1,17 +1,27 @@
 ---
 name: laragear-transbank-webpay-integration
-description: "Certify Webpay integration: harvest the nine transaction tokens Transbank requires for its automatic Webpay Plus integration certification, driving the real integration form with Pest browser tests inside the application. Use when the user says 'certify Webpay integration', asks to produce, refresh or report certification tokens, or when a token harvest run fails or a scenario wedges. Do not use for routine transaction processing, Oneclick/Maestro work, or the local emulator."
+description: "Certify Webpay integration: harvest the nine transaction tokens Transbank requires for its automatic Webpay Plus integration certification, driving the real integration form with Pest browser tests inside the application. Use when the user says 'certify Webpay integration', asks to produce, refresh or report certification tokens, or when a token harvest run fails or a scenario wedges. Do not use for routine transaction processing, Oneclick/Webpay work, or the local emulator."
 ---
 
 # Certify Webpay Integration
 
 Transbank certification for Webpay Plus requires nine transaction tokens, one per scenario, minted against the **real** integration environment (`webpay3gint.transbank.cl`, commerce `597055555532`, the package's default integration credentials). This skill harvests them by driving the live hosted form with a proven Pest reference test, records each token **before and while** the form is driven, and produces one regenerable table the user copy-pastes into Transbank's integration certification form.
 
+## Requisites
+
+Recite this list. If one requisite fails or is not available, stop and report it to the user.
+
+1. Pest v4 installed: `composer show pestphp/pest` must report a `^4.x` version.
+2. Playwright (or an equivalent browser driver) installed, so the test suite can control a real browser.
+3. A Payment, Order, BuyIntent or similar model or DTO able to capture the transaction token. If none exists, the payment flow is not completely implemented.
+
+Verification: the installed Pest reports v4, the driver opens a page, and the model (or DTO) can persist the token before the return commit.
+
 ## Keeping the certification table
 
-Use `INTEGRATION.md` at the **application root** as the constant checkpoint instead of carrying the certification state in the conversation, because it is the deliverable Transbank certification consumes. The harvest's afterAll hook creates and updates it from the ledger, and it holds **only the table** — one row per harvested scenario, with no headings, explanations, assertions or any other text:
+Use `INTEGRATION.md` at the **application root** as the constant checkpoint instead of carrying the certification state in the conversation, because it is the deliverable Transbank certification consumes. The harvest's `afterAll` hook creates and updates it from the ledger, and it holds **only the table** — one row per harvested scenario, with no headings, explanations, assertions or any other text:
 
-| Scenario | Token | Buy order | Amount | Card | Outcome | Commit | Collected |
+    | Scenario | Token | Buy order | Amount | Card | Outcome | Commit | Collected |
 
 - The fixed nine-scenario matrix (how each token is produced, and the evidence each row must hold) is the table in **Gathering each token by scenario** below. Run only those scenarios; never add, drop or invent scenarios, and never report a token the run did not produce and record. Extra tokens are noise.
 - After a run, read the table from `INTEGRATION.md` and report it verbatim to the user.
@@ -20,14 +30,12 @@ Verification: `INTEGRATION.md` contains only the markdown table, with exactly on
 
 ## Incorporating the proven reference test
 
-Use `references/WebpayTokensTest.php` next to this SKILL.md instead of writing a new harvest, because it is the single self-contained file proven end-to-end against the live form: form driving, event-driven waits, ledger and the nine scenarios all live in it. Place it in the application and adapt what the file marks as `APPLICATION ANCHORS` — the only application-specific parts:
+Use [references/WebpayTokensTest.php](references/WebpayTokensTest.php) instead of writing a new harvest, because it is the single self-contained file proven end-to-end against the live form: form driving, event-driven waits, ledger and the nine scenarios all live in it. Place it in the application and adapt what the file marks as `APPLICATION ANCHORS` — the only application-specific parts:
 
 1. `webpayIntegrationCreatePayment()` — mirrors the application's payment-intent creation: the models, quote, total and metadata the application commits on return.
 2. `WEBPAY_RESULT_PATH` — the application route Transbank redirects the user back to.
 3. `WEBPAY_TEXT_SUCCESS` / `WEBPAY_TEXT_FAILURE` — the headlines the application result page renders; the timeout scenario also asserts where an unvalidated return lands.
 4. `test()->openPage()` / `test()->screenshotPage()` — the Pest browser helpers the application provides.
-
-The application needs Pest v4 with browser tests working (in-process server, Playwright).
 
 ```bash
 cp references/WebpayTokensTest.php tests/Browser/Integration/WebpayTokensTest.php
@@ -37,14 +45,14 @@ Verification: `php -l` accepts the placed file, and without `WEBPAY_INTEGRATION=
 
 ## Running the harvest
 
-Run the reference test as a direct serial Pest invocation with the emulator forced off, instead of through the application's normal suite, because `phpunit.xml` may force the emulator on and emulated servers cannot produce real tokens. The `PHP_INI_SCAN_DIR` prefix is Sail-specific; keep it while the application runs in Sail.
+Run the reference test as a direct serial Pest invocation with the emulator forced off, instead of through the application's normal suite, because `phpunit.xml` may force the emulator on and emulated servers cannot produce real tokens. These env vars are the only mandate; the rest of the environment is the application's business.
 
 ```bash
-XDEBUG_MODE=off PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/home/sail/php-conf.d WEBPAY_INTEGRATION=true TRANSBANK_EMULATOR=false timeout 1200 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php
+XDEBUG_MODE=off WEBPAY_INTEGRATION=true TRANSBANK_EMULATOR=false timeout 1200 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php
 ```
 
 - **Serial only, never `--parallel`.** Transbank sessions are tied to a single browser context.
-- A single wedged scenario fails its own expectation with diagnostics. Re-run only that scenario, serially: same env prefix with `timeout 900 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php --filter=timeout` (substitute the scenario). The ledger keyed-merges, so a partial re-run updates only its own scenario rows.
+- A single wedged scenario fails its own expectation with diagnostics. Re-run only that scenario, serially: the same command with `timeout 900` and `--filter=timeout` (substitute the scenario). The ledger keyed-merges, so a partial re-run updates only its own scenario rows.
 - Never trigger this skill from routine package usage. It runs on explicit certification requests only.
 
 Verification: `tests/Browser/Integration/tokens.json` gains one key per harvested scenario, and `INTEGRATION.md` renders at the application base path.
@@ -102,7 +110,7 @@ Quirks the driving code already handles — keep them when adapting:
 3. **Cuotas options are hidden until the control opens**: click the visible `Sin Cuotas` element (prefer the button match), then the visible option, then verify the control collapsed showing it.
 4. **Cancel button has a hidden duplicate** inside the `app-modal-protagonismo-correo` modal, instantiated a few seconds after load: click the **first visible match via script, exactly once**. Repeated clicks while the redirect is in flight make the SPA error out with "Tu transacción no se pudo llevar a cabo".
 5. **Multi-element texts** (the method tile) need whitespace-normalized `innerText` waits; a raw `includes` never matches.
-6. **Slow Inertia hydration**: the commerce return page may stay an un-hydrated shell well past `assertSee`'s retry window; poll the content up to 30 s before asserting.
+6. **Frontend hydration, whatever the framework**: the application frontend may still be an un-hydrated shell right after the return; poll the page content for up to **10 s top**, because waiting longer only hides a broken return.
 7. **Never navigate or click during interstitials** ("no recargues ni cierres la pantalla") — poll the URL instead.
 8. **Every wait is a poll loop** (100 ms), never a sleep.
 

@@ -9,7 +9,7 @@
  * Run them ONLY as a direct serial Pest invocation with the emulator forced
  * off (phpunit.xml would otherwise enable it):
  *
- *   XDEBUG_MODE=off PHP_INI_SCAN_DIR=/usr/local/etc/php/conf.d:/home/sail/php-conf.d WEBPAY_INTEGRATION=true TRANSBANK_EMULATOR=false timeout 1200 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php
+ *   XDEBUG_MODE=off WEBPAY_INTEGRATION=true TRANSBANK_EMULATOR=false timeout 1200 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php
  *
  * (serial, never --parallel; timeout-only re-run: same env prefix with
  * `timeout 900 vendor/bin/pest tests/Browser/Integration/WebpayTokensTest.php --filter=timeout`).
@@ -613,16 +613,16 @@ function webpayFormAwaitAutoReturn(PendingAwaitablePage|Webpage $page, int $seco
 
 /**
  * Asserts the text is visible on the result page, polling the page content
- * up to 30 s first (the Inertia shell has been observed staying un-hydrated
- * — a bare "Laravel" body — well past the plugin's assertSee retry window),
- * with a self-describing failure message carrying hydration diagnostics.
+ * up to 10 s first: the frontend may still be un-hydrated right after the
+ * return, whatever the framework, but waiting longer than that only hides
+ * a broken return. The failure message carries hydration diagnostics.
  */
 function webpayFormSee(PendingAwaitablePage|Webpage $page, string $text): void
 {
-    $seen = webpayFormPoll(fn (): bool => str_contains((string) $page->content(), $text), 30);
+    $seen = webpayFormPoll(fn (): bool => str_contains((string) $page->content(), $text), 10);
 
     expect($seen)->toBeTrue(sprintf(
-        'Never saw [%s] on %s within 30 s (hydration: %s).',
+        'Never saw [%s] on %s within 10 s (hydration: %s).',
         $text,
         $page->url(),
         webpayFormDiagnostics($page),
@@ -631,25 +631,23 @@ function webpayFormSee(PendingAwaitablePage|Webpage $page, string $text): void
 
 /**
  * Best-effort hydration diagnostics for webpayFormSee failure messages:
- * title, the Inertia data-page attribute snippet, body HTML size and the
- * number of /build/ resources the browser actually fetched. Any probe error
- * degrades to '?' — the page may be wedged mid-navigation while we report.
+ * title, body HTML size and the number of script resources the browser
+ * actually fetched — framework-agnostic, enough to tell an un-hydrated
+ * shell from a broken return. Any probe error degrades to '?' — the page
+ * may be wedged mid-navigation while we report.
  */
 function webpayFormDiagnostics(PendingAwaitablePage|Webpage $page): string
 {
     try {
         return (string) $page->script(<<<'JS'
             (() => {
-                const root = document.querySelector('#app, [data-page]');
-
                 const resources = performance.getEntriesByType('resource');
 
                 return JSON.stringify({
                     title: document.title,
                     url: location.href,
-                    dataPage: (root?.getAttribute('data-page') ?? '').slice(0, 300),
                     bodyLength: document.body.innerHTML.length,
-                    buildResources: resources.filter((entry) => entry.name.includes('/build/')).length,
+                    scripts: resources.filter((entry) => entry.initiatorType === 'script').length,
                 });
             })()
         JS);
